@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TK Buje</title>
+  <link rel="manifest" href="./manifest.json"/>
+  <link rel="icon" href="./icon.png" type="image/png"/>
+  <link rel="apple-touch-icon" href="./icon.png"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="TK Buje"/>
+  <meta name="theme-color" content="#0a0a0a"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --bg2: #141414;
+      --bg3: #1a1a1a;
+      --bg4: #222222;
+      --border: rgba(255,255,255,0.08);
+      --border2: rgba(255,255,255,0.14);
+      --text: #f0f0f0;
+      --text2: #c8c8c8;
+      --text3: #888888;
+      --orange: #ff6b2b;
+      --orange2: #ff8c55;
+      --orange-glow: rgba(255,107,43,0.15);
+      --green: #22c55e;
+      --green2: #16a34a;
+      --green-glow: rgba(34,197,94,0.12);
+      --red: #ef4444;
+      --red-glow: rgba(239,68,68,0.12);
+      --gold: #f59e0b;
+      --silver: #94a3b8;
+      --bronze: #b45309;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; -webkit-font-smoothing:antialiased; }
+
+    /* COUNTER ANIMATION */
+    @keyframes countUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .stat-num { animation: countUp 0.6s ease both; }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--bg4); border-radius:2px; }
+
+
+
+    /* PORTAL / POČETNI ZASLON */
+    .portal-screen { display:flex; position:fixed; inset:0; background:var(--bg); z-index:1100; overflow-y:auto; align-items:center; justify-content:center; padding:2rem 1.25rem; }
+    .portal-screen.hide { display:none; }
+    .portal-bg { position:absolute; inset:0; background:radial-gradient(ellipse at 20% 20%, rgba(255,107,43,0.11) 0%, transparent 55%), radial-gradient(ellipse at 80% 75%, rgba(34,197,94,0.07) 0%, transparent 55%); pointer-events:none; }
+    .portal-bg::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(13,13,13,0.15), rgba(13,13,13,0.92)); }
+    .portal-shell { width:100%; max-width:1100px; position:relative; z-index:1; text-align:center; }
+    .portal-logo { font-family:'Space Grotesk',sans-serif; font-size:2.3rem; font-weight:700; color:var(--text); letter-spacing:-0.6px; margin-bottom:2.25rem; display:inline-flex; align-items:center; gap:0.45rem; border-bottom:2px solid var(--orange); padding-bottom:0.35rem; }
+    .portal-logo span { color:var(--orange); }
+    .portal-title { font-family:'Space Grotesk',sans-serif; font-size:clamp(2.25rem,7vw,4.6rem); font-weight:800; letter-spacing:-2px; line-height:0.98; margin-bottom:0.8rem; }
+    .portal-title span { color:var(--orange); }
+    .portal-subtitle { color:var(--text2); font-size:clamp(1rem,2.4vw,1.35rem); margin-bottom:2.6rem; }
+    .portal-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.1rem; }
+    .portal-card { min-height:290px; background:linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.018)); border:1px solid var(--border2); border-radius:22px; padding:1.65rem 1.25rem; display:flex; flex-direction:column; align-items:center; justify-content:space-between; text-decoration:none; color:var(--text); cursor:pointer; transition:transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease; box-shadow:0 16px 50px rgba(0,0,0,0.25); }
+    .portal-card:hover { transform:translateY(-4px); background:linear-gradient(180deg, rgba(255,255,255,0.065), rgba(255,255,255,0.025)); box-shadow:0 24px 70px rgba(0,0,0,0.38); }
+    .portal-card.orange { border-color:rgba(255,107,43,0.55); }
+    .portal-card.blue { border-color:rgba(59,130,246,0.55); }
+    .portal-card.green { border-color:rgba(34,197,94,0.55); }
+    .portal-icon { font-size:3.3rem; line-height:1; margin-top:0.4rem; filter:drop-shadow(0 10px 24px rgba(0,0,0,0.5)); }
+    .portal-card.orange .portal-icon, .portal-card.orange .portal-open { color:var(--orange); }
+    .portal-card.blue .portal-icon, .portal-card.blue .portal-open { color:var(--blue, #3b82f6); }
+    .portal-card.green .portal-icon, .portal-card.green .portal-open { color:var(--green); }
+    .portal-card-title { font-family:'Space Grotesk',sans-serif; font-size:1.35rem; font-weight:800; text-transform:uppercase; letter-spacing:-0.4px; margin-bottom:0.55rem; }
+    .portal-card-text { color:var(--text2); font-size:0.96rem; line-height:1.45; min-height:2.8em; }
+    .portal-open { margin-top:1.4rem; border:1px solid currentColor; border-radius:999px; padding:0.55rem 1.15rem; font-size:0.82rem; font-weight:800; letter-spacing:0.6px; text-transform:uppercase; min-width:130px; }
+    .portal-note { margin-top:2rem; color:var(--text3); font-size:0.86rem; }
+
+    /* LOGIN */
+    .login-screen { display:none; position:fixed; inset:0; background:var(--bg); z-index:1000; align-items:center; justify-content:center; flex-direction:column; }
+    .login-screen.show { display:flex; }
+    .login-bg { position:absolute; inset:0; background:radial-gradient(ellipse at 30% 20%, rgba(255,107,43,0.08) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(34,197,94,0.06) 0%, transparent 60%); }
+    .login-box { position:relative; background:var(--bg2); border:1px solid var(--border2); border-radius:24px; padding:2.5rem 2rem; width:100%; max-width:360px; text-align:center; box-shadow:0 40px 80px rgba(0,0,0,0.6); }
+    .login-logo { font-family:'Space Grotesk',sans-serif; font-size:2.2rem; font-weight:700; color:var(--text); letter-spacing:-1px; margin-bottom:0.2rem; }
+    .login-logo span { color:var(--orange); }
+    .login-sub { font-size:0.78rem; color:var(--text3); text-transform:uppercase; letter-spacing:3px; margin-bottom:2.5rem; }
+    .btn-google { display:flex; align-items:center; justify-content:center; gap:0.75rem; width:100%; background:var(--bg3); border:1px solid var(--border2); color:var(--text); font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:500; padding:0.85rem 1.5rem; border-radius:12px; cursor:pointer; transition:all 0.2s; }
+    .btn-google:hover { background:var(--bg4); border-color:var(--orange); color:var(--orange); }
+    .btn-google img { width:18px; height:18px; }
+    .login-note { position:relative; font-size:0.72rem; color:var(--text3); margin-top:3rem; }
+
+    /* HEADER */
+    header { background:rgba(13,13,13,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 1.25rem; position:sticky; top:0; z-index:200; }
+    .header-inner { max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .logo { font-family:'Space Grotesk',sans-serif; font-size:1.3rem; font-weight:700; color:var(--text); letter-spacing:-0.5px; }
+    .logo span { color:var(--orange); }
+
+    /* DESKTOP NAV */
+    nav { display:flex; gap:0.15rem; align-items:center; }
+    nav button { background:none; border:none; color:var(--text2); font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500; padding:0.4rem 0.85rem; border-radius:8px; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+    nav button:hover { color:var(--text); background:var(--bg3); }
+    nav button.active { color:var(--orange); background:var(--orange-glow); }
+    .admin-btn { border:1px solid var(--border) !important; }
+    .admin-btn.logged-in { color:var(--green) !important; background:var(--green-glow) !important; border-color:rgba(34,197,94,0.3) !important; }
+
+    /* USER BADGE */
+    .user-badge { display:flex; align-items:center; gap:0.5rem; }
+    .user-avatar-placeholder { width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg, var(--orange), var(--orange2)); display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:700; color:white; flex-shrink:0; }
+    .user-name { font-size:0.82rem; font-weight:500; color:var(--text2); }
+    .btn-logout { background:none; border:1px solid var(--border); color:var(--text3); font-size:0.72rem; padding:0.25rem 0.6rem; border-radius:6px; cursor:pointer; transition:all 0.2s; margin-left:0.1rem; }
+    .btn-logout:hover { color:var(--red); border-color:var(--red); }
+
+    /* HAMBURGER */
+    .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:0.4rem; background:none; border:none; }
+    .hamburger span { display:block; width:22px; height:2px; background:var(--text2); border-radius:2px; transition:all 0.3s; }
+    .hamburger.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity:0; }
+    .hamburger.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+
+    /* MOBILE MENU */
+    .mobile-menu { display:none; position:fixed; top:56px; left:0; right:0; background:rgba(13,13,13,0.97); backdrop-filter:blur(20px); z-index:199; padding:0.75rem 1rem 1.25rem; border-bottom:1px solid var(--border); }
+    .mobile-menu.open { display:block; }
+    .mobile-user-info { display:flex; align-items:center; gap:0.75rem; padding:0.75rem 0.5rem 1rem; border-bottom:1px solid var(--border); margin-bottom:0.5rem; }
+    .mobile-menu button { display:block; width:100%; text-align:left; background:none; border:none; color:var(--text2); font-family:'Inter',sans-serif; font-size:0.95rem; font-weight:500; padding:0.7rem 0.5rem; border-bottom:1px solid var(--border); cursor:pointer; transition:color 0.2s; }
+    .mobile-menu button:last-child { border-bottom:none; }
+    .mobile-menu button.active { color:var(--orange); }
+    .mobile-menu .mobile-admin-btn { color:var(--green) !important; }
+    .mobile-logout { color:var(--red) !important; margin-top:0.25rem; }
+
+    /* HERO */
+    .hero { background:var(--bg); padding:2rem 1.25rem 1.5rem; position:relative; overflow:hidden; border-bottom:1px solid var(--border); }
+    .hero-bg { position:absolute; inset:0; background:radial-gradient(ellipse at 20% 50%, rgba(255,107,43,0.07) 0%, transparent 50%), radial-gradient(ellipse at 80% 50%, rgba(34,197,94,0.05) 0%, transparent 50%); pointer-events:none; }
+    .hero-inner { max-width:1100px; margin:0 auto; position:relative; }
+    .hero-title { font-family:'Space Grotesk',sans-serif; font-size:clamp(1.8rem,5vw,3rem); font-weight:700; letter-spacing:-1.5px; line-height:1; }
+    .hero-title span { color:var(--orange); }
+    .hero-sub { font-size:0.78rem; color:var(--text3); text-transform:uppercase; letter-spacing:3px; margin-top:0.4rem; }
+
+    /* STATS */
+    .stats-bar { background:var(--bg2); border-bottom:1px solid var(--border); padding:0; }
+    .stats-inner { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:repeat(4,1fr); }
+    .stat { padding:1rem 1.25rem; border-right:1px solid var(--border); text-align:center; }
+    .stat:last-child { border-right:none; }
+    .stat-num { font-family:'Space Grotesk',sans-serif; font-size:1.6rem; font-weight:700; color:var(--orange); line-height:1; }
+    .stat-label { font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px; margin-top:0.2rem; }
+
+    /* MAIN */
+    main { max-width:1100px; margin:0 auto; padding:1.5rem 1.25rem; }
+    .section { display:none; }
+    .section.active { display:block; }
+
+    .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; }
+    .section-title { font-family:'Space Grotesk',sans-serif; font-size:1.1rem; font-weight:700; color:var(--text); letter-spacing:-0.3px; }
+    .section-title span { color:var(--text3); font-weight:400; font-size:0.85rem; margin-left:0.5rem; }
+
+    /* LOADING */
+    .loading { text-align:center; padding:3rem; color:var(--text3); }
+    .spinner { width:32px; height:32px; border:2px solid var(--bg4); border-top-color:var(--orange); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 0.75rem; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes slideIn { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:translateX(0); } }
+
+    /* FILTERS */
+    .filters { display:flex; gap:0.4rem; margin-bottom:1.25rem; flex-wrap:wrap; align-items:center; }
+    .filter-btn { background:var(--bg3); border:1px solid var(--border); color:var(--text2); font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:500; padding:0.4rem 0.9rem; border-radius:20px; cursor:pointer; transition:all 0.2s; }
+    .filter-btn:hover { border-color:var(--orange); color:var(--orange); }
+    .filter-btn.active { background:var(--orange-glow); border-color:var(--orange); color:var(--orange); }
+    .add-match-btn { margin-left:auto; background:var(--orange); border:none; color:white; font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:600; padding:0.45rem 1.1rem; border-radius:20px; cursor:pointer; transition:all 0.2s; }
+    .add-match-btn:hover { background:var(--orange2); transform:translateY(-1px); }
+
+    /* MATCH CARDS */
+    .matches-grid { display:grid; gap:0.75rem; }
+    .match-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.1rem 1.25rem; transition:all 0.2s; animation:fadeUp 0.3s ease both; cursor:default; }
+    .match-card:hover { border-color:var(--border2); background:var(--bg3); transform:translateY(-1px); box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+    .match-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.4rem; }
+    .match-num { font-family:'Space Grotesk',sans-serif; font-size:0.78rem; font-weight:600; color:var(--orange); letter-spacing:1px; text-transform:uppercase; }
+    .match-date { font-size:0.72rem; color:var(--text3); }
+    .status-badge { font-size:0.65rem; font-weight:600; padding:0.2rem 0.65rem; border-radius:20px; letter-spacing:0.5px; text-transform:uppercase; }
+    .status-confirmed { background:var(--green-glow); color:var(--green); border:1px solid rgba(34,197,94,0.2); }
+    .status-pending { background:rgba(245,158,11,0.1); color:var(--gold); border:1px solid rgba(245,158,11,0.2); }
+    .match-teams { display:grid; grid-template-columns:1fr auto 1fr; gap:1rem; align-items:center; }
+    .team { display:flex; flex-direction:column; gap:0.3rem; }
+    .team.losers { text-align:right; }
+    .team.winners .player-name { color:var(--text); font-weight:600; }
+    .team.losers .player-name { color:var(--text3); }
+    .player-name { font-size:0.88rem; cursor:pointer; transition:color 0.15s; }
+    .player-name:hover { color:var(--orange) !important; }
+    .match-score-wrap { text-align:center; }
+    .match-score { display:inline-block; background:var(--bg4); color:var(--text); border:1px solid var(--border2); border-radius:8px; padding:0.3rem 0.75rem; font-family:'Space Grotesk',sans-serif; font-size:0.9rem; font-weight:600; letter-spacing:1px; white-space:nowrap; }
+    .match-score.no-score { background:transparent; color:var(--text3); font-size:0.72rem; font-family:'Inter',sans-serif; font-weight:400; border-color:transparent; }
+
+    /* LEADERBOARD */
+    .leaderboard-wrap { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+    .lb-header { display:grid; grid-template-columns:52px 1fr 70px 70px 80px; padding:0.75rem 1.25rem; background:var(--bg3); border-bottom:1px solid var(--border); }
+    .lb-header span { font-size:0.65rem; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px; }
+    .lb-header span:nth-child(n+3) { text-align:center; }
+    .lb-row { display:grid; grid-template-columns:52px 1fr 70px 70px 80px; padding:0.85rem 1.25rem; border-bottom:1px solid var(--border); align-items:center; transition:all 0.15s; animation:fadeUp 0.35s ease both; cursor:pointer; }
+    .lb-row:last-child { border-bottom:none; }
+    .lb-row:hover { background:var(--bg3); }
+    .lb-row.top1 { background:linear-gradient(90deg, rgba(245,158,11,0.05) 0%, transparent 60%); }
+    .lb-row.top2 { background:linear-gradient(90deg, rgba(148,163,184,0.04) 0%, transparent 60%); }
+    .lb-row.top3 { background:linear-gradient(90deg, rgba(180,83,9,0.04) 0%, transparent 60%); }
+    .rank-badge { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-size:0.9rem; font-weight:700; }
+    .rank-badge.r1 { background:rgba(245,158,11,0.15); color:var(--gold); }
+    .rank-badge.r2 { background:rgba(148,163,184,0.12); color:var(--silver); }
+    .rank-badge.r3 { background:rgba(180,83,9,0.12); color:var(--bronze); }
+    .rank-badge.rn { background:var(--bg4); color:var(--text3); font-size:0.78rem; }
+    .lb-name { font-size:0.9rem; font-weight:600; color:var(--text); }
+    .lb-stat { text-align:center; font-size:0.9rem; font-weight:600; }
+    .lb-stat.wins { color:var(--green); }
+    .lb-stat.losses { color:var(--red); }
+    .lb-stat.points { font-family:'Space Grotesk',sans-serif; font-size:1.1rem; color:var(--orange); }
+
+    /* MODALS */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); z-index:500; align-items:center; justify-content:center; padding:1rem; }
+    .modal-overlay.open { display:flex; }
+    .modal { background:var(--bg2); border:1px solid var(--border2); border-radius:20px; padding:1.75rem; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; position:relative; animation:fadeUp 0.25s ease; }
+    .modal-title { font-family:'Space Grotesk',sans-serif; font-size:1.2rem; font-weight:700; color:var(--text); margin-bottom:1.25rem; letter-spacing:-0.3px; }
+    .modal-close { position:absolute; top:1.1rem; right:1.1rem; background:var(--bg3); border:1px solid var(--border); width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1rem; cursor:pointer; color:var(--text2); line-height:1; transition:all 0.2s; }
+    .modal-close:hover { color:var(--text); background:var(--bg4); }
+
+    /* FORMS */
+    .form-group { margin-bottom:0.9rem; }
+    .form-group label { display:block; font-size:0.72rem; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:0.4rem; }
+    .form-group input[type="text"], .form-group input[type="email"], .form-group input[type="password"], .form-group input[type="number"], .form-group select { width:100%; padding:0.65rem 0.9rem; background:var(--bg3); border:1px solid var(--border2); border-radius:10px; font-family:'Inter',sans-serif; font-size:0.88rem; color:var(--text); transition:border-color 0.2s; }
+    .form-group input:focus, .form-group select:focus { outline:none; border-color:var(--orange); background:var(--bg4); }
+    .form-group input::placeholder { color:var(--text3); }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
+    .form-section { background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:1rem; margin-bottom:0.9rem; }
+    .form-section-label { font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.75rem; }
+    .btn-primary { width:100%; background:var(--orange); color:white; border:none; padding:0.8rem; border-radius:10px; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; margin-top:0.5rem; }
+    .btn-primary:hover { background:var(--orange2); }
+    .btn-primary:disabled { background:var(--bg4); color:var(--text3); cursor:not-allowed; }
+    .form-note { font-size:0.72rem; color:var(--text3); margin-top:0.5rem; }
+    .current-user-tag { background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:0.5rem 0.75rem; font-size:0.8rem; color:var(--text2); margin-bottom:0.75rem; }
+
+    /* PLAYER SEARCH */
+    .player-search-wrap { position:relative; }
+    .player-search-input { width:100%; padding:0.65rem 0.9rem; background:var(--bg3); border:1px solid var(--border2); border-radius:10px; font-family:'Inter',sans-serif; font-size:0.88rem; color:var(--text); transition:border-color 0.2s; }
+    .player-search-input:focus { outline:none; border-color:var(--orange); border-radius:10px 10px 0 0; }
+    .player-dropdown { display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg3); border:1px solid var(--orange); border-top:none; border-radius:0 0 10px 10px; z-index:100; max-height:180px; overflow-y:auto; box-shadow:0 12px 32px rgba(0,0,0,0.4); }
+    .player-dropdown.open { display:block; }
+    .player-option { padding:0.6rem 0.9rem; cursor:pointer; font-size:0.85rem; color:var(--text2); border-bottom:1px solid var(--border); transition:all 0.15s; }
+    .player-option:last-child { border-bottom:none; }
+    .player-option:hover { background:var(--bg4); color:var(--orange); }
+    .player-option.selected { color:var(--green); background:var(--green-glow); }
+    .player-selected-badge { display:none; align-items:center; justify-content:space-between; padding:0.5rem 0.9rem; background:var(--green-glow); border:1px solid rgba(34,197,94,0.25); border-radius:10px; font-size:0.85rem; color:var(--green); font-weight:600; margin-top:0.3rem; }
+    .player-selected-badge.show { display:flex; }
+    .player-clear { background:none; border:none; color:var(--text3); cursor:pointer; font-size:1.1rem; line-height:1; padding:0; transition:color 0.15s; }
+    .player-clear:hover { color:var(--red); }
+
+    /* PLAYER MODAL */
+    .player-header { display:flex; align-items:center; gap:1rem; margin-bottom:1.25rem; }
+    .player-avatar-big { width:52px; height:52px; border-radius:14px; background:linear-gradient(135deg, var(--orange), var(--orange2)); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-size:1.3rem; font-weight:700; color:white; flex-shrink:0; }
+    .player-meta .pname { font-family:'Space Grotesk',sans-serif; font-size:1.2rem; font-weight:700; color:var(--text); letter-spacing:-0.3px; }
+    .player-meta .pemail { font-size:0.75rem; color:var(--text3); margin-top:0.15rem; }
+    .admin-tag { display:inline-block; font-size:0.65rem; background:var(--green-glow); color:var(--green); border:1px solid rgba(34,197,94,0.25); padding:0.15rem 0.5rem; border-radius:20px; font-weight:600; margin-top:0.3rem; }
+    .player-stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.75rem; margin-bottom:1.25rem; }
+    .pstat { background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:0.9rem; text-align:center; }
+    .pstat-num { font-family:'Space Grotesk',sans-serif; font-size:1.8rem; font-weight:700; line-height:1; }
+    .pstat-num.pts { color:var(--orange); }
+    .pstat-num.wins { color:var(--green); }
+    .pstat-num.losses { color:var(--red); }
+    .pstat-label { font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-top:0.3rem; }
+    .streak-wrap { display:flex; gap:4px; flex-wrap:wrap; margin:0.75rem 0; }
+    .streak-dot { width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:700; }
+    .streak-dot.w { background:var(--green-glow); color:var(--green); border:1px solid rgba(34,197,94,0.3); }
+    .streak-dot.l { background:var(--red-glow); color:var(--red); border:1px solid rgba(239,68,68,0.2); }
+    .recent-label { font-size:0.72rem; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:0.75rem; }
+    .chart-wrap { background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:1rem; margin-bottom:1rem; }
+    .chart-title { font-size:0.72rem; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:0.75rem; }
+    .chart-svg { width:100%; overflow:visible; }
+    .mini-match { display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0; border-bottom:1px solid var(--border); font-size:0.82rem; }
+    .mini-match:last-child { border-bottom:none; }
+    .mini-result.win { color:var(--green); font-weight:600; }
+    .mini-result.loss { color:var(--red); font-weight:600; }
+
+    /* ADMIN */
+    .admin-section { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:1.5rem; }
+    .admin-section-header { padding:0.9rem 1.25rem; background:var(--bg3); border-bottom:1px solid var(--border); font-family:'Space Grotesk',sans-serif; font-size:0.85rem; font-weight:600; color:var(--text2); }
+    .pending-row { display:grid; grid-template-columns:1fr auto; gap:1rem; padding:1rem 1.25rem; border-bottom:1px solid var(--border); align-items:center; animation:fadeUp 0.3s ease both; }
+    .pending-row:last-child { border-bottom:none; }
+    .pending-teams { font-weight:600; font-size:0.88rem; color:var(--text); }
+    .pending-meta { font-size:0.73rem; color:var(--text3); margin-top:0.2rem; }
+    .pending-actions { display:flex; gap:0.5rem; flex-shrink:0; }
+    .btn-confirm { background:var(--green-glow); color:var(--green); border:1px solid rgba(34,197,94,0.25); padding:0.4rem 0.85rem; border-radius:8px; font-size:0.78rem; font-weight:600; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+    .btn-confirm:hover { background:var(--green2); color:white; border-color:var(--green2); }
+    .btn-reject { background:var(--red-glow); color:var(--red); border:1px solid rgba(239,68,68,0.2); padding:0.4rem 0.85rem; border-radius:8px; font-size:0.78rem; font-weight:600; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+    .btn-reject:hover { background:var(--red); color:white; }
+    .player-admin-row { display:grid; grid-template-columns:1fr 1fr 50px 36px 36px; padding:0.7rem 1.25rem; border-bottom:1px solid var(--border); align-items:center; font-size:0.85rem; }
+    .player-admin-row:last-child { border-bottom:none; }
+    .match-admin-row { display:grid; grid-template-columns:44px 1fr auto auto 36px; padding:0.7rem 1.25rem; border-bottom:1px solid var(--border); align-items:center; gap:0.5rem; font-size:0.85rem; }
+    .match-admin-row:last-child { border-bottom:none; }
+
+    /* TOAST */
+    .toast { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%) translateY(100px); background:var(--bg3); color:var(--text); border:1px solid var(--border2); padding:0.7rem 1.5rem; border-radius:10px; font-size:0.85rem; font-weight:500; z-index:9999; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+    .toast.show { transform:translateX(-50%) translateY(0); }
+    .toast.success { background:var(--green-glow); color:var(--green); border-color:rgba(34,197,94,0.3); }
+    .toast.error { background:var(--red-glow); color:var(--red); border-color:rgba(239,68,68,0.3); }
+
+    /* TABS */
+    .modal-tabs { display:flex; gap:0.25rem; margin-bottom:1.25rem; background:var(--bg3); border-radius:10px; padding:0.25rem; }
+    .modal-tab { flex:1; background:none; border:none; color:var(--text3); font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500; padding:0.5rem; border-radius:8px; cursor:pointer; transition:all 0.2s; }
+    .modal-tab.active { background:var(--bg2); color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,0.3); }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+
+    /* H2H */
+    .h2h-search-wrap { position:relative; margin-bottom:1.25rem; }
+    .h2h-search { width:100%; padding:0.65rem 0.9rem; background:var(--bg3); border:1px solid var(--border2); border-radius:10px; font-family:'Inter',sans-serif; font-size:0.88rem; color:var(--text); transition:border-color 0.2s; }
+    .h2h-search:focus { outline:none; border-color:var(--orange); border-radius:10px 10px 0 0; }
+    .h2h-dropdown { display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg3); border:1px solid var(--orange); border-top:none; border-radius:0 0 10px 10px; z-index:100; max-height:180px; overflow-y:auto; box-shadow:0 12px 32px rgba(0,0,0,0.4); }
+    .h2h-dropdown.open { display:block; }
+    .h2h-option { padding:0.6rem 0.9rem; cursor:pointer; font-size:0.85rem; color:var(--text2); border-bottom:1px solid var(--border); transition:all 0.15s; }
+    .h2h-option:last-child { border-bottom:none; }
+    .h2h-option:hover { background:var(--bg4); color:var(--orange); }
+    .h2h-result { background:var(--bg3); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+    .h2h-header { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; padding:1.25rem; gap:1rem; border-bottom:1px solid var(--border); }
+    .h2h-player { text-align:center; }
+    .h2h-player-name { font-family:'Space Grotesk',sans-serif; font-size:0.95rem; font-weight:700; color:var(--text); }
+    .h2h-player-pts { font-size:0.72rem; color:var(--text3); margin-top:0.2rem; }
+    .h2h-vs { font-family:'Space Grotesk',sans-serif; font-size:1.1rem; font-weight:700; color:var(--text3); }
+    .h2h-scores { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; padding:1rem 1.25rem; border-bottom:1px solid var(--border); }
+    .h2h-score-box { background:var(--bg2); border-radius:10px; padding:0.85rem; text-align:center; border:1px solid var(--border); }
+    .h2h-score-box.winner { border-color:var(--orange); background:var(--orange-glow); }
+    .h2h-score-num { font-family:'Space Grotesk',sans-serif; font-size:1.8rem; font-weight:700; color:var(--text); line-height:1; }
+    .h2h-score-box.winner .h2h-score-num { color:var(--orange); }
+    .h2h-score-label { font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-top:0.25rem; }
+    .h2h-section-title { font-size:0.72rem; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px; padding:0.75rem 1.25rem 0.5rem; }
+    .h2h-match { display:flex; justify-content:space-between; align-items:center; padding:0.6rem 1.25rem; border-bottom:1px solid var(--border); font-size:0.82rem; }
+    .h2h-match:last-child { border-bottom:none; }
+    .h2h-match-result { font-weight:600; }
+    .h2h-match-result.win { color:var(--green); }
+    .h2h-match-result.loss { color:var(--red); }
+    .empty { text-align:center; padding:2.5rem; color:var(--text3); font-size:0.88rem; }
+
+    footer { text-align:center; padding:1.5rem; color:var(--text3); font-size:0.72rem; border-top:1px solid var(--border); margin-top:2rem; }
+
+
+    @media(max-width:700px) {
+      .portal-screen { align-items:flex-start; padding:2.2rem 1rem; }
+      .portal-logo { margin-bottom:2rem; font-size:1.35rem; }
+      .portal-title { font-size:2.05rem; line-height:1.12; letter-spacing:-1px; }
+      .portal-subtitle { font-size:0.9rem; margin-bottom:1.7rem; }
+      .portal-grid { grid-template-columns:1fr; gap:0.75rem; }
+      .portal-card { min-height:auto; flex-direction:row; text-align:left; justify-content:flex-start; gap:1rem; padding:1rem 1rem; border-radius:14px; }
+      .portal-icon { font-size:2.25rem; min-width:52px; text-align:center; margin:0; }
+      .portal-card-title { font-size:1rem; margin-bottom:0.25rem; }
+      .portal-card-text { font-size:0.82rem; min-height:0; }
+      .portal-open { margin:0 0 0 auto; padding:0; border:none; min-width:auto; font-size:1.45rem; }
+      .portal-open span { display:none; }
+      .portal-note { display:none; }
+    }
+
+    @media(max-width:700px) {
+      nav { display:none; }
+      .hamburger { display:flex; }
+      .stats-inner { grid-template-columns:repeat(2,1fr); }
+      .stat:nth-child(2) { border-right:none; }
+      .stat:nth-child(3) { border-top:1px solid var(--border); }
+      .stat:nth-child(4) { border-top:1px solid var(--border); border-right:none; }
+    }
+    @media(max-width:500px) {
+      .match-teams { grid-template-columns:1fr; }
+      .match-score-wrap { text-align:left; }
+      .form-row { grid-template-columns:1fr; }
+      .pending-row { grid-template-columns:1fr; }
+      .lb-header, .lb-row { grid-template-columns:40px 1fr 55px 55px 65px; padding:0.7rem 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- PORTAL / POČETNI ZASLON -->
+<div class="portal-screen" id="portal-screen">
+  <div class="portal-bg"></div>
+  <div class="portal-shell">
+    <div class="portal-logo">TK <span>BUJE</span></div>
+    <div class="portal-title">Dobrodošli u<br><span>TK BUJE</span></div>
+    <div class="portal-subtitle">Odaberite aplikaciju koju želite koristiti</div>
+
+    <div class="portal-grid">
+      <a class="portal-card orange" href="https://golencio.github.io/tkbuje-piramida/">
+        <div class="portal-icon">△</div>
+        <div>
+          <div class="portal-card-title">Piramida</div>
+          <div class="portal-card-text">Klupska piramida i izazovi</div>
+        </div>
+        <div class="portal-open"><span>Otvori</span> →</div>
+      </a>
+
+      <a class="portal-card blue" href="https://turniri.tkbuje.hr/">
+        <div class="portal-icon">🎾</div>
+        <div>
+          <div class="portal-card-title">Buje Mix</div>
+          <div class="portal-card-text">Švicarac turniri</div>
+        </div>
+        <div class="portal-open"><span>Otvori</span> →</div>
+      </a>
+
+      <a class="portal-card green" href="https://isias.tkbuje.hr/">
+        <div class="portal-icon">🏃</div>
+        <div>
+          <div class="portal-card-title">Išijas Liga</div>
+          <div class="portal-card-text">Najzabavnija liga na svijetu</div>
+        </div>
+        <div class="portal-open"><span>Otvori</span> →</div>
+      </a>
+
+      <button class="portal-card orange" type="button" onclick="enterPariciApp()">
+        <div class="portal-icon">🏆</div>
+        <div>
+          <div class="portal-card-title">Parići</div>
+          <div class="portal-card-text">Parići i klupska ljestvica</div>
+        </div>
+        <div class="portal-open"><span>Otvori</span> →</div>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-bg"></div>
+  <div class="login-box">
+    <div class="login-logo">TK <span>Buje</span></div>
+    <div class="login-sub">Tenis Klub</div>
+    <button class="btn-google" onclick="loginWithGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G"/>
+      Prijava s Google računom
+    </button>
+    <div style="display:flex;align-items:center;gap:8px;margin:1rem 0;">
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+      <span style="font-size:0.72rem;color:var(--text3);">ili</span>
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+    </div>
+    <div style="text-align:left;margin-bottom:0.5rem;">
+      <label style="font-size:0.72rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:0.4rem;">Email adresa</label>
+      <input type="email" id="magic-email" placeholder="ime@email.com" style="width:100%;padding:0.65rem 0.9rem;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;font-family:'Inter',sans-serif;font-size:0.88rem;color:var(--text);box-sizing:border-box;" onkeydown="if(event.key==='Enter')sendMagicLink()"/>
+    </div>
+    <button class="btn-google" onclick="sendMagicLink()" id="magic-btn" style="margin-top:0.25rem;background:var(--orange);color:white;border-color:var(--orange);">
+      Pošalji magic link
+    </button>
+    <div id="magic-sent" style="display:none;background:var(--green-glow);border:1px solid rgba(34,197,94,0.3);border-radius:10px;padding:0.75rem;margin-top:0.75rem;font-size:0.82rem;color:var(--green);">
+      ✓ Link poslan! Provjeri email i klikni link za prijavu.
+    </div>
+    <p style="font-size:0.72rem;color:var(--text3);margin-top:1rem;">Samo registrirani članovi kluba</p>
+  </div>
+  <p class="login-note">© 2026 TK Buje</p>
+</div>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">TK <span>Buje</span></div>
+    <nav>
+      <button id="nav-portal" onclick="showPortal()">🏠 Portal</button>
+      <button onclick="location.href='https://golencio.github.io/tkbuje-piramida/'">Piramida</button>
+      <button onclick="location.href='https://turniri.tkbuje.hr/'">Buje Mix</button>
+      <button onclick="location.href='https://isias.tkbuje.hr/'">Išijas Liga</button>
+      <button id="nav-mecevi" onclick="showSection('mecevi',this)">Mečevi</button>
+      <button class="active" id="nav-ljestvica" onclick="showSection('ljestvica',this)">Ljestvica</button>
+      <button id="nav-rezultati" onclick="showSection('rezultati',this)">Rezultati</button>
+      <button class="admin-btn" id="admin-nav-btn" style="display:none" onclick="showSection('admin',this)">⚙ Admin</button>
+      <div class="user-badge" id="user-badge" style="display:none">
+        <div class="user-avatar-placeholder" id="user-initials">?</div>
+        <span class="user-name" id="user-name-display"></span>
+        <button class="btn-logout" onclick="logout()">Odjava</button>
+      </div>
+    </nav>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mobile-user-info" id="mobile-user-info" style="display:none">
+    <div class="user-avatar-placeholder" id="mobile-initials">?</div>
+    <span style="color:var(--text);font-weight:600;font-size:0.9rem;" id="mobile-name"></span>
+  </div>
+  <button onclick="showPortal();toggleMenu();">🏠 Portal</button>
+  <button onclick="location.href='https://golencio.github.io/tkbuje-piramida/'">🔺 Piramida</button>
+  <button onclick="location.href='https://turniri.tkbuje.hr/'">🎾 Buje Mix</button>
+  <button onclick="location.href='https://isias.tkbuje.hr/'">🏃 Išijas Liga</button>
+  <button onclick="mobileNav('mecevi')" id="mob-mecevi">🎾 Mečevi</button>
+  <button onclick="mobileNav('ljestvica')" id="mob-ljestvica" class="active">🏆 Ljestvica</button>
+  <button onclick="mobileNav('rezultati')" id="mob-rezultati">📋 Rezultati</button>
+  <button onclick="mobileNav('admin')" id="mob-admin" class="mobile-admin-btn" style="display:none">⚙ Admin</button>
+  <button onclick="logout()" class="mobile-logout">← Odjava</button>
+</div>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-inner">
+    <div class="hero-title">Tenis Klub <span>Buje</span></div>
+    <div class="hero-sub">Parovi · Rezultati · Ljestvica</div>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat"><div class="stat-num" id="stat-mecevi">—</div><div class="stat-label">Mečevi</div></div>
+    <div class="stat"><div class="stat-num" id="stat-potvrdjeni">—</div><div class="stat-label">Potvrđeni</div></div>
+    <div class="stat"><div class="stat-num" id="stat-ceka">—</div><div class="stat-label">Na čekanju</div></div>
+    <div class="stat"><div class="stat-num" id="stat-igraci">—</div><div class="stat-label">Igrači</div></div>
+  </div>
+</div>
+
+<main>
+  <section id="sec-mecevi" class="section">
+    <div class="filters">
+      <button class="filter-btn active" onclick="filterMatches('sve',this)">Svi</button>
+      <button class="filter-btn" onclick="filterMatches('Potvrđeno',this)">Potvrđeni</button>
+      <button class="filter-btn" onclick="filterMatches('Čeka Potvrdu',this)">Na čekanju</button>
+      <button class="add-match-btn" onclick="checkAndOpenMatch()">+ Novi meč</button>
+    </div>
+    <div id="mecevi-container" class="matches-grid">
+      <div class="loading"><div class="spinner"></div>Učitavam...</div>
+    </div>
+  </section>
+
+  <section id="sec-ljestvica" class="section active">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
+      <button onclick="exportLjestvica()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:'Inter',sans-serif;font-size:0.78rem;font-weight:500;padding:0.4rem 0.9rem;border-radius:8px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--orange)';this.style.color='var(--orange)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">↓ Izvezi ljestvicu</button>
+    </div>
+    <div id="ljestvica-container">
+      <div class="loading"><div class="spinner"></div>Učitavam...</div>
+    </div>
+  </section>
+
+  <section id="sec-rezultati" class="section">
+    <div id="rezultati-container" class="matches-grid">
+      <div class="loading"><div class="spinner"></div>Učitavam...</div>
+    </div>
+  </section>
+
+  <section id="sec-admin" class="section">
+    <div id="admin-container"></div>
+  </section>
+</main>
+
+<!-- MODAL: Novi meč -->
+<div class="modal-overlay" id="modal-match">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-match')">×</button>
+    <div class="modal-title">Novi Meč</div>
+    <div id="current-user-info" class="current-user-tag"></div>
+    <div class="form-section">
+      <div class="form-section-label" style="color:var(--green);">🏆 Pobjednički par</div>
+      <div class="form-row">
+        <div class="form-group" style="margin:0">
+          <label>Pobjednik 1 *</label>
+          <div class="player-search-wrap">
+            <input type="text" class="player-search-input" id="search-w1" placeholder="Pretraži..." oninput="filterPlayers('w1')" onfocus="openDropdown('w1')" autocomplete="off"/>
+            <div class="player-dropdown" id="drop-w1"></div>
+          </div>
+          <div class="player-selected-badge" id="badge-w1"><span id="badge-w1-name"></span><button class="player-clear" onclick="clearPlayer('w1')">×</button></div>
+          <input type="hidden" id="w1"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Pobjednik 2 <span style="color:var(--text3);font-weight:400">(opcionalno)</span></label>
+          <div class="player-search-wrap">
+            <input type="text" class="player-search-input" id="search-w2" placeholder="Pretraži..." oninput="filterPlayers('w2')" onfocus="openDropdown('w2')" autocomplete="off"/>
+            <div class="player-dropdown" id="drop-w2"></div>
+          </div>
+          <div class="player-selected-badge" id="badge-w2"><span id="badge-w2-name"></span><button class="player-clear" onclick="clearPlayer('w2')">×</button></div>
+          <input type="hidden" id="w2"/>
+        </div>
+      </div>
+    </div>
+    <div class="form-section" style="background:rgba(239,68,68,0.04);border-color:rgba(239,68,68,0.12);">
+      <div class="form-section-label" style="color:var(--red);">😔 Poraženi par</div>
+      <div class="form-row">
+        <div class="form-group" style="margin:0">
+          <label>Poraženi 1 *</label>
+          <div class="player-search-wrap">
+            <input type="text" class="player-search-input" id="search-l1" placeholder="Pretraži..." oninput="filterPlayers('l1')" onfocus="openDropdown('l1')" autocomplete="off"/>
+            <div class="player-dropdown" id="drop-l1"></div>
+          </div>
+          <div class="player-selected-badge" id="badge-l1"><span id="badge-l1-name"></span><button class="player-clear" onclick="clearPlayer('l1')">×</button></div>
+          <input type="hidden" id="l1"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Poraženi 2 <span style="color:var(--text3);font-weight:400">(opcionalno)</span></label>
+          <div class="player-search-wrap">
+            <input type="text" class="player-search-input" id="search-l2" placeholder="Pretraži..." oninput="filterPlayers('l2')" onfocus="openDropdown('l2')" autocomplete="off"/>
+            <div class="player-dropdown" id="drop-l2"></div>
+          </div>
+          <div class="player-selected-badge" id="badge-l2"><span id="badge-l2-name"></span><button class="player-clear" onclick="clearPlayer('l2')">×</button></div>
+          <input type="hidden" id="l2"/>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Rezultat (npr. 6:4, 7:5) *</label>
+      <input type="text" id="match-score-input" placeholder="6:4, 6:3"/>
+    </div>
+    <button class="btn-primary" id="submit-match-btn" onclick="submitMatch()">Pošalji na potvrdu</button>
+    <p class="form-note">Admin mora potvrditi meč da bi se bodovi dodijelili.</p>
+  </div>
+</div>
+
+<!-- MODAL: Edit igrača -->
+<div class="modal-overlay" id="modal-edit-player">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-edit-player')">×</button>
+    <div class="modal-title">Uredi Igrača</div>
+    <div class="form-group">
+      <label>Ime i prezime *</label>
+      <input type="text" id="edit-player-name" placeholder="Ime Prezime"/>
+    </div>
+    <div class="form-group">
+      <label>Email *</label>
+      <input type="email" id="edit-player-email" placeholder="ime@email.com"/>
+    </div>
+    <div class="form-group">
+      <label>Početni bodovi</label>
+      <input type="number" id="edit-player-points" min="0"/>
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:0.75rem;margin-top:0.5rem;">
+      <input type="checkbox" id="edit-player-admin" style="width:16px;height:16px;accent-color:var(--orange);"/>
+      <label style="font-size:0.88rem;font-weight:500;color:var(--text2);text-transform:none;letter-spacing:0;">Admin ovlasti</label>
+    </div>
+    <button class="btn-primary" id="save-edit-player-btn" onclick="saveEditPlayer()">💾 Spremi promjene</button>
+  </div>
+</div>
+
+<!-- MODAL: Edit meča -->
+<div class="modal-overlay" id="modal-edit-match">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-edit-match')">×</button>
+    <div class="modal-title">Uredi Meč</div>
+    <div class="form-section">
+      <div class="form-section-label" style="color:var(--green);">🏆 Pobjednički par</div>
+      <div class="form-row">
+        <div class="form-group" style="margin:0">
+          <label>Pobjednik 1 *</label>
+          <select id="edit-w1"></select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Pobjednik 2</label>
+          <select id="edit-w2"></select>
+        </div>
+      </div>
+    </div>
+    <div class="form-section" style="background:rgba(239,68,68,0.04);border-color:rgba(239,68,68,0.12);">
+      <div class="form-section-label" style="color:var(--red);">😔 Poraženi par</div>
+      <div class="form-row">
+        <div class="form-group" style="margin:0">
+          <label>Poraženi 1 *</label>
+          <select id="edit-l1"></select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Poraženi 2</label>
+          <select id="edit-l2"></select>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Rezultat *</label>
+      <input type="text" id="edit-score" placeholder="6:4, 6:3"/>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="edit-status">
+        <option value="Potvrđeno">Potvrđeno</option>
+        <option value="Čeka Potvrdu">Čeka Potvrdu</option>
+      </select>
+    </div>
+    <button class="btn-primary" id="save-edit-match-btn" onclick="saveEditMatch()">💾 Spremi promjene</button>
+  </div>
+</div>
+
+<!-- MODAL: Igrač -->
+<div class="modal-overlay" id="modal-player">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-player')">×</button>
+    <div id="player-modal-content"><div class="loading"><div class="spinner"></div></div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<footer>© 2026 TK Buje · Powered by Supabase</footer>
+
+<script>
+const SUPABASE_URL = 'https://aglbdjyljbzzpddrshno.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFnbGJkanlsamJ6enBkZHJzaG5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NTQxOTcsImV4cCI6MjA5MzIzMDE5N30.NEOJnMJiUHCEGa27xkPf2HM00KEFZC5DjcDpC6t8U6Q';
+const NETLIFY_URL = 'https://golencio.github.io/tkbuje';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let allPlayers = [], allMatches = [];
+let currentUser = null, currentPlayer = null;
+let appStarted = false;
+let authListenerReady = false;
+
+function hidePortal() {
+  const portal = document.getElementById('portal-screen');
+  if(portal) portal.classList.add('hide');
+}
+
+function showPortal() {
+  appStarted = false;
+  localStorage.removeItem('tkbuje_selected_app');
+  document.getElementById('login-screen')?.classList.remove('show');
+  const portal = document.getElementById('portal-screen');
+  if(portal) portal.classList.remove('hide');
+}
+
+async function enterPariciApp() {
+  appStarted = true;
+  localStorage.setItem('tkbuje_selected_app', 'parici');
+  hidePortal();
+  const ok = await handleAuth();
+  if(ok) await loadAll();
+}
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3200);
+}
+
+async function sendMagicLink() {
+  const email = document.getElementById('magic-email').value.trim();
+  if(!email) {
+    document.getElementById('magic-email').style.borderColor = 'var(--red)';
+    return;
+  }
+  const btn = document.getElementById('magic-btn');
+  btn.textContent = 'Šaljem...';
+  btn.disabled = true;
+
+  const { error } = await sb.auth.signInWithOtp({
+    email: email,
+    options: { emailRedirectTo: 'https://golencio.github.io/tkbuje' }
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Pošalji magic link';
+
+  if(error) {
+    alert('Greška: ' + error.message);
+    return;
+  }
+  document.getElementById('magic-sent').style.display = 'block';
+  document.getElementById('magic-email').value = '';
+}
+
+async function loginWithGoogle() {
+  const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: NETLIFY_URL } });
+  if(error) showToast('Greška: ' + error.message, 'error');
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  currentUser = null; currentPlayer = null;
+  document.getElementById('login-screen').classList.add('show');
+  document.getElementById('user-badge').style.display = 'none';
+  document.getElementById('admin-nav-btn').style.display = 'none';
+}
+
+async function handleAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if(!session) { document.getElementById('login-screen').classList.add('show'); return false; }
+  currentUser = session.user;
+  const email = currentUser.email;
+  const { data: player } = await sb.from('players').select('*').eq('email', email).single();
+  if(!player) {
+    document.getElementById('login-screen').classList.add('show');
+    document.getElementById('login-screen').querySelector('.login-box').innerHTML = `
+      <div class="login-logo">TK <span>Buje</span></div>
+      <div style="margin-top:1.5rem;">
+        <div style="font-size:2.5rem;">🚫</div>
+        <h3 style="font-size:1rem;font-weight:700;color:var(--text);margin:0.75rem 0 0.5rem;">Nisi registrirani član</h3>
+        <p style="font-size:0.8rem;color:var(--text3);margin-bottom:1.5rem;">${email}<br>nije u bazi kluba. Kontaktiraj admina.</p>
+        <button class="btn-google" onclick="logout()">← Odjava</button>
+      </div>`;
+    return false;
+  }
+  currentPlayer = player;
+  document.getElementById('login-screen').classList.remove('show');
+  const initials = player.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('user-initials').textContent = initials;
+  document.getElementById('user-name-display').textContent = player.name.split(' ')[0];
+  document.getElementById('user-badge').style.display = 'flex';
+  if(player.is_admin) {
+    document.getElementById('admin-nav-btn').style.display = 'inline-flex';
+    document.getElementById('admin-nav-btn').classList.add('logged-in');
+    const mobAdmin = document.getElementById('mob-admin');
+    if(mobAdmin) mobAdmin.style.display = 'block';
+  }
+  const mobileUserInfo = document.getElementById('mobile-user-info');
+  if(mobileUserInfo) {
+    mobileUserInfo.style.display = 'flex';
+    document.getElementById('mobile-initials').textContent = initials;
+    document.getElementById('mobile-name').textContent = player.name;
+  }
+  return true;
+}
+
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id === 'admin') renderAdminPanel();
+}
+
+function fmtDate(str) {
+  if(!str) return '';
+  return new Date(str).toLocaleDateString('hr-HR', {day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
+function pname(email) {
+  if(!email) return '';
+  const p = allPlayers.find(x => x.email === email);
+  return p ? p.name : email;
+}
+
+async function loadAll() {
+  const [{ data: players }, { data: matches }] = await Promise.all([
+    sb.from('players').select('*').eq('active', true).order('name'),
+    sb.from('matches').select('*').order('match_number', {ascending:false})
+  ]);
+  allPlayers = players || [];
+  allMatches = matches || [];
+  const confirmed = allMatches.filter(m => m.status === 'Potvrđeno');
+  const pending = allMatches.filter(m => m.status === 'Čeka Potvrdu');
+  animateCount('stat-mecevi', allMatches.length);
+  animateCount('stat-potvrdjeni', confirmed.length);
+  animateCount('stat-ceka', pending.length);
+  animateCount('stat-igraci', allPlayers.length);
+  renderMatches('sve');
+  renderLjestvica();
+  renderRezultati();
+}
+
+function populateSelects() {}
+
+function openDropdown(field) {
+  filterPlayers(field);
+  document.getElementById('drop-' + field).classList.add('open');
+}
+
+function filterPlayers(field) {
+  const query = document.getElementById('search-' + field).value.toLowerCase();
+  const selectedEmails = ['w1','w2','l1','l2'].filter(f=>f!==field).map(f=>document.getElementById(f).value).filter(Boolean);
+  const filtered = allPlayers.filter(p => p.name.toLowerCase().includes(query) && !selectedEmails.includes(p.email));
+  const drop = document.getElementById('drop-' + field);
+  const currentVal = document.getElementById(field).value;
+  drop.innerHTML = filtered.length
+    ? filtered.map(p => `<div class="player-option ${p.email===currentVal?'selected':''}" onclick="selectPlayer('${field}','${p.email}','${p.name.replace(/'/g,"\\'")}')"> ${p.name}</div>`).join('')
+    : '<div style="padding:0.6rem 0.9rem;color:var(--text3);font-size:0.82rem;">Nema rezultata</div>';
+  drop.classList.add('open');
+}
+
+function selectPlayer(field, email, name) {
+  document.getElementById(field).value = email;
+  document.getElementById('search-' + field).value = '';
+  document.getElementById('drop-' + field).classList.remove('open');
+  document.getElementById('badge-' + field + '-name').textContent = name;
+  document.getElementById('badge-' + field).classList.add('show');
+  document.getElementById('search-' + field).style.display = 'none';
+}
+
+function clearPlayer(field) {
+  document.getElementById(field).value = '';
+  document.getElementById('search-' + field).value = '';
+  document.getElementById('search-' + field).style.display = 'block';
+  document.getElementById('badge-' + field).classList.remove('show');
+  document.getElementById('drop-' + field).classList.remove('open');
+}
+
+function resetPlayerSearches() {
+  ['w1','w2','l1','l2'].forEach(field => {
+    document.getElementById(field).value = '';
+    document.getElementById('search-' + field).value = '';
+    document.getElementById('search-' + field).style.display = 'block';
+    document.getElementById('badge-' + field).classList.remove('show');
+    document.getElementById('drop-' + field).classList.remove('open');
+  });
+}
+
+document.addEventListener('click', e => {
+  if(!e.target.closest('.player-search-wrap')) document.querySelectorAll('.player-dropdown').forEach(d=>d.classList.remove('open'));
+});
+
+function filterMatches(filter, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderMatches(filter);
+}
+
+function renderMatches(filter) {
+  const container = document.getElementById('mecevi-container');
+  const list = filter==='sve' ? allMatches : allMatches.filter(m=>m.status===filter);
+  if(!list.length) { container.innerHTML='<div class="empty">Nema mečeva.</div>'; return; }
+  container.innerHTML = list.map((m,i) => `
+    <div class="match-card" style="animation-delay:${Math.min(i,10)*0.03}s">
+      <div class="match-header">
+        <span class="match-num">Meč #${m.match_number}</span>
+        <span class="match-date">${fmtDate(m.created_at)}</span>
+        <span class="status-badge ${m.status==='Potvrđeno'?'status-confirmed':'status-pending'}">${m.status==='Potvrđeno'?'Potvrđeno':'Na čekanju'}</span>
+      </div>
+      <div class="match-teams">
+        <div class="team winners">
+          <span class="player-name" onclick="openPlayer('${m.winner1_email}')">🥇 ${pname(m.winner1_email)}</span>
+          ${m.winner2_email?`<span class="player-name" onclick="openPlayer('${m.winner2_email}')">🥇 ${pname(m.winner2_email)}</span>`:''}
+        </div>
+        <div class="match-score-wrap"><div class="${m.notes?'match-score':'match-score no-score'}">${m.notes||'TBD'}</div></div>
+        <div class="team losers">
+          <span class="player-name" onclick="openPlayer('${m.loser1_email}')">${pname(m.loser1_email)} 😔</span>
+          ${m.loser2_email?`<span class="player-name" onclick="openPlayer('${m.loser2_email}')">${pname(m.loser2_email)} 😔</span>`:''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function calcStats() {
+  const confirmed = allMatches.filter(m=>m.status==='Potvrđeno');
+  const stats = {};
+  allPlayers.forEach(p => { stats[p.email]={name:p.name,email:p.email,wins:0,losses:0,points:Number(p.initial_points)||0}; });
+  confirmed.forEach(m => {
+    [m.winner1_email,m.winner2_email].filter(Boolean).forEach(e=>{if(stats[e]){stats[e].wins++;stats[e].points+=2;}});
+    [m.loser1_email,m.loser2_email].filter(Boolean).forEach(e=>{if(stats[e]){stats[e].losses++;stats[e].points+=1;}});
+  });
+  return stats;
+}
+
+function renderLjestvica() {
+  const stats = calcStats();
+  const sorted = Object.values(stats).filter(s=>s.wins>0||s.losses>0).sort((a,b)=>b.points-a.points||b.wins-a.wins);
+  const container = document.getElementById('ljestvica-container');
+  if(!sorted.length) { container.innerHTML='<div class="empty">Nema podataka.</div>'; return; }
+  const rankClass = i => i===0?'r1':i===1?'r2':i===2?'r3':'rn';
+  const rowClass = i => i===0?'top1':i===1?'top2':i===2?'top3':'';
+  container.innerHTML = `
+    <div class="leaderboard-wrap">
+      <div class="lb-header">
+        <span>#</span><span>Igrač</span>
+        <span style="text-align:center">W</span><span style="text-align:center">L</span><span style="text-align:center">Pts</span>
+      </div>
+      ${sorted.map((p,i)=>`
+        <div class="lb-row ${rowClass(i)}" style="animation-delay:${i*0.04}s" onclick="openPlayer('${p.email}')">
+          <div class="rank-badge ${rankClass(i)}">${i+1}</div>
+          <div class="lb-name">${p.name}</div>
+          <div class="lb-stat wins">${p.wins}</div>
+          <div class="lb-stat losses">${p.losses}</div>
+          <div class="lb-stat points">${p.points}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderRezultati() {
+  const container = document.getElementById('rezultati-container');
+  const confirmed = allMatches.filter(m=>m.status==='Potvrđeno'&&m.notes);
+  if(!confirmed.length) { container.innerHTML='<div class="empty">Nema rezultata.</div>'; return; }
+  container.innerHTML = confirmed.map((m,i) => `
+    <div class="match-card" style="animation-delay:${Math.min(i,10)*0.03}s">
+      <div class="match-header">
+        <span class="match-num">Meč #${m.match_number}</span>
+        <span class="match-date">${fmtDate(m.created_at)}</span>
+        <span class="status-badge status-confirmed">Potvrđeno</span>
+      </div>
+      <div class="match-teams">
+        <div class="team winners">
+          <span class="player-name" onclick="openPlayer('${m.winner1_email}')">🏆 ${pname(m.winner1_email)}</span>
+          ${m.winner2_email?`<span class="player-name" onclick="openPlayer('${m.winner2_email}')">🏆 ${pname(m.winner2_email)}</span>`:''}
+        </div>
+        <div class="match-score-wrap"><div class="match-score">${m.notes}</div></div>
+        <div class="team losers">
+          <span class="player-name" onclick="openPlayer('${m.loser1_email}')">${pname(m.loser1_email)}</span>
+          ${m.loser2_email?`<span class="player-name" onclick="openPlayer('${m.loser2_email}')">${pname(m.loser2_email)}</span>`:''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderRecentMatches(pm, email) {
+  return '<div class="recent-label">Zadnji mečevi</div>' + pm.map(m => {
+    const isWin = m.winner1_email===email || m.winner2_email===email;
+    const partner = isWin
+      ? (m.winner1_email===email ? m.winner2_email : m.winner1_email)
+      : (m.loser1_email===email ? m.loser2_email : m.loser1_email);
+    const opp1 = isWin ? m.loser1_email : m.winner1_email;
+    const opp2 = isWin ? m.loser2_email : m.winner2_email;
+    return '<div class="mini-match">'
+      + '<div>'
+      + '<span class="mini-result '+(isWin?'win':'loss')+'">'+(isWin?'↑ Pobjeda':'↓ Poraz')+'</span>'
+      + (partner ? '<span style="font-size:0.75rem;color:var(--text3);margin-left:0.4rem;">w/ '+pname(partner)+'</span>' : '')
+      + '<span style="font-size:0.75rem;color:var(--text3);margin-left:0.4rem;">vs '+pname(opp1)+(opp2?' & '+pname(opp2):'')+'</span>'
+      + '</div>'
+      + '<div style="font-size:0.73rem;color:var(--text3);text-align:right">'+(m.notes||'')+'<br>'+fmtDate(m.created_at)+'</div>'
+      + '</div>';
+  }).join('');
+}
+
+function openPlayer(email) {
+  if(!email) return;
+  const player = allPlayers.find(p=>p.email===email);
+  if(!player) return;
+  const stats = calcStats();
+  const s = stats[email]||{wins:0,losses:0,points:Number(player.initial_points)||0};
+  const confirmed = allMatches.filter(m=>m.status==='Potvrđeno');
+  const pm = confirmed.filter(m=>[m.winner1_email,m.winner2_email,m.loser1_email,m.loser2_email].includes(email)).slice(0,6);
+  const initials = player.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+
+  // Ostali igrači za H2H dropdown
+  const otherPlayers = allPlayers.filter(p=>p.email!==email);
+  const h2hOpts = otherPlayers.map(p=>`<div class="h2h-option" onclick="showH2H('${email}','${p.email}')">${p.name}</div>`).join('');
+
+  document.getElementById('player-modal-content').innerHTML = `
+    <div class="player-header">
+      <div class="player-avatar-big">${initials}</div>
+      <div class="player-meta">
+        <div class="pname">${player.name}</div>
+        <div class="pemail">${player.email}</div>
+        ${player.is_admin?'<div class="admin-tag">Admin</div>':''}
+      </div>
+    </div>
+
+    <div class="modal-tabs">
+      <button class="modal-tab active" onclick="switchTab('tab-stats',this)">Statistika</button>
+      <button class="modal-tab" onclick="switchTab('tab-h2h',this)">Head to Head</button>
+    </div>
+
+    <div class="tab-content active" id="tab-stats">
+      <div class="player-stats-grid">
+        <div class="pstat"><div class="pstat-num pts">${s.points}</div><div class="pstat-label">Bodovi</div></div>
+        <div class="pstat"><div class="pstat-num wins">${s.wins}</div><div class="pstat-label">Pobjede</div></div>
+        <div class="pstat"><div class="pstat-num losses">${s.losses}</div><div class="pstat-label">Porazi</div></div>
+      </div>
+      ${renderStreak(getStreak(email))}
+      ${renderPointsChart(email)}
+      ${pm.length ? renderRecentMatches(pm, email) : '<p style="color:var(--text3);font-size:0.82rem;text-align:center;padding:1rem 0;">Nema odigranih mečeva.</p>'}
+    </div>
+
+    <div class="tab-content" id="tab-h2h">
+      <div class="h2h-search-wrap">
+        <input type="text" class="h2h-search" id="h2h-search-input" placeholder="Pretraži igrača..." oninput="filterH2H('${email}')" onfocus="openH2HDropdown()" autocomplete="off"/>
+        <div class="h2h-dropdown" id="h2h-dropdown">${h2hOpts}</div>
+      </div>
+      <div id="h2h-result"><div class="empty" style="padding:1.5rem;">Odaberi igrača za usporedbu</div></div>
+    </div>`;
+
+  openModal('modal-player');
+}
+
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.modal-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  btn.classList.add('active');
+}
+
+function openH2HDropdown() {
+  document.getElementById('h2h-dropdown').classList.add('open');
+}
+
+function filterH2H(email1) {
+  const q = document.getElementById('h2h-search-input').value.toLowerCase();
+  const others = allPlayers.filter(p=>p.email!==email1&&p.name.toLowerCase().includes(q));
+  const drop = document.getElementById('h2h-dropdown');
+  drop.innerHTML = others.length
+    ? others.map(p=>`<div class="h2h-option" onclick="showH2H('${email1}','${p.email}')">${p.name}</div>`).join('')
+    : '<div style="padding:0.6rem 0.9rem;color:var(--text3);font-size:0.82rem;">Nema rezultata</div>';
+  drop.classList.add('open');
+}
+
+document.addEventListener('click', e => {
+  if(!e.target.closest('.h2h-search-wrap')) {
+    const d = document.getElementById('h2h-dropdown');
+    if(d) d.classList.remove('open');
+  }
+});
+
+function showH2H(email1, email2) {
+  document.getElementById('h2h-dropdown').classList.remove('open');
+  document.getElementById('h2h-search-input').value = pname(email2);
+
+  const p1 = allPlayers.find(p=>p.email===email1);
+  const p2 = allPlayers.find(p=>p.email===email2);
+  const confirmed = allMatches.filter(m=>m.status==='Potvrđeno');
+  const stats = calcStats();
+  const s1 = stats[email1]||{points:0};
+  const s2 = stats[email2]||{points:0};
+
+  // Mečevi kao protivnici
+  const vsMatches = confirmed.filter(m => {
+    const team1 = [m.winner1_email, m.winner2_email];
+    const team2 = [m.loser1_email, m.loser2_email];
+    return (team1.includes(email1) && team2.includes(email2)) ||
+           (team1.includes(email2) && team2.includes(email1));
+  });
+
+  // Mečevi kao partneri
+  const togetherMatches = confirmed.filter(m => {
+    const winners = [m.winner1_email, m.winner2_email];
+    const losers = [m.loser1_email, m.loser2_email];
+    return (winners.includes(email1) && winners.includes(email2)) ||
+           (losers.includes(email1) && losers.includes(email2));
+  });
+
+  // Pobjede/porazi u međusobnim
+  let p1wins = 0, p2wins = 0;
+  vsMatches.forEach(m => {
+    const winners = [m.winner1_email, m.winner2_email];
+    if(winners.includes(email1)) p1wins++;
+    else p2wins++;
+  });
+
+  // Zajedno: pobjede i porazi
+  let togetherWins = 0, togetherLosses = 0;
+  togetherMatches.forEach(m => {
+    const winners = [m.winner1_email, m.winner2_email];
+    if(winners.includes(email1)) togetherWins++;
+    else togetherLosses++;
+  });
+
+  const container = document.getElementById('h2h-result');
+
+  container.innerHTML = `
+    <div class="h2h-result">
+      <div class="h2h-header">
+        <div class="h2h-player">
+          <div class="h2h-player-name">${p1.name.split(' ')[0]}</div>
+          <div class="h2h-player-pts">${s1.points} bod.</div>
+        </div>
+        <div class="h2h-vs">VS</div>
+        <div class="h2h-player">
+          <div class="h2h-player-name">${p2.name.split(' ')[0]}</div>
+          <div class="h2h-player-pts">${s2.points} bod.</div>
+        </div>
+      </div>
+
+      ${vsMatches.length ? `
+      <div class="h2h-section-title">⚔️ Kao protivnici (${vsMatches.length} mečeva)</div>
+      <div class="h2h-scores">
+        <div class="h2h-score-box ${p1wins>=p2wins?'winner':''}">
+          <div class="h2h-score-num">${p1wins}</div>
+          <div class="h2h-score-label">${p1.name.split(' ')[0]}</div>
+        </div>
+        <div class="h2h-score-box ${p2wins>p1wins?'winner':''}">
+          <div class="h2h-score-num">${p2wins}</div>
+          <div class="h2h-score-label">${p2.name.split(' ')[0]}</div>
+        </div>
+      </div>
+      ${vsMatches.map(m=>{
+        const p1won=[m.winner1_email,m.winner2_email].includes(email1);
+        return '<div class="h2h-match">'
+          + '<span class="h2h-match-result '+(p1won?'win':'loss')+'">'+(p1won?'↑ '+p1.name.split(' ')[0]+' pobijedio':'↑ '+p2.name.split(' ')[0]+' pobijedio')+'</span>'
+          + '<span style="color:var(--text3);font-size:0.75rem;">'+(m.notes||'—')+' · '+fmtDate(m.created_at)+'</span>'
+          + '</div>';
+      }).join('')}` : '<div class="h2h-section-title" style="padding:1rem 1.25rem;">⚔️ Još nisu igrali jedan protiv drugog</div>'}
+
+      ${togetherMatches.length ? `
+      <div class="h2h-section-title" style="border-top:1px solid var(--border);padding-top:0.75rem;">🤝 Kao partneri (${togetherMatches.length} mečeva)</div>
+      <div class="h2h-scores">
+        <div class="h2h-score-box ${togetherWins>togetherLosses?'winner':''}">
+          <div class="h2h-score-num">${togetherWins}</div>
+          <div class="h2h-score-label">Pobjede</div>
+        </div>
+        <div class="h2h-score-box ${togetherLosses>togetherWins?'winner':''}">
+          <div class="h2h-score-num">${togetherLosses}</div>
+          <div class="h2h-score-label">Porazi</div>
+        </div>
+      </div>` : ''}
+    </div>`;
+}
+
+function checkAndOpenMatch() {
+  if(!currentPlayer) { showToast('Moraš biti prijavljen!','error'); return; }
+  document.getElementById('current-user-info').innerHTML = `Unos kao: <strong style="color:var(--text)">${currentPlayer.name}</strong>`;
+  openModal('modal-match');
+}
+
+async function submitMatch() {
+  const w1=document.getElementById('w1').value, w2=document.getElementById('w2').value;
+  const l1=document.getElementById('l1').value, l2=document.getElementById('l2').value;
+  const score=document.getElementById('match-score-input').value.trim();
+  if(!w1||!l1||!score){showToast('Ispuni sva obavezna polja!','error');return;}
+  const sel=[w1,w2,l1,l2].filter(Boolean);
+  if(new Set(sel).size!==sel.length){showToast('Isti igrač ne može biti na obje strane!','error');return;}
+  const btn=document.getElementById('submit-match-btn');
+  btn.disabled=true; btn.textContent='Šaljem...';
+  const {error}=await sb.from('matches').insert({created_by_email:currentPlayer.email,status:'Čeka Potvrdu',winner1_email:w1,winner2_email:w2||null,loser1_email:l1,loser2_email:l2||null,notes:score});
+  btn.disabled=false; btn.textContent='Pošalji na potvrdu';
+  if(error){showToast('Greška: '+error.message,'error');return;}
+  showToast('Meč poslan na potvrdu! ✓','success');
+  closeModal('modal-match');
+  resetPlayerSearches();
+  document.getElementById('match-score-input').value='';
+  await loadAll();
+}
+
+function renderAdminPanel() {
+  if(!currentPlayer?.is_admin){document.getElementById('admin-container').innerHTML='<div class="empty">⛔ Nemaš admin ovlasti.</div>';return;}
+  const pending=allMatches.filter(m=>m.status==='Čeka Potvrdu');
+  const c=document.getElementById('admin-container');
+  c.innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-header">⏳ Čekaju potvrdu (${pending.length})</div>
+      ${pending.length?pending.map((m,i)=>`
+        <div class="pending-row" style="animation-delay:${i*0.05}s">
+          <div>
+            <div class="pending-teams">🏆 ${pname(m.winner1_email)}${m.winner2_email?' & '+pname(m.winner2_email):''} <span style="color:var(--text3);font-weight:400">vs</span> ${pname(m.loser1_email)}${m.loser2_email?' & '+pname(m.loser2_email):''}</div>
+            <div class="pending-meta">${m.notes||'—'} · ${pname(m.created_by_email)} · ${fmtDate(m.created_at)}</div>
+          </div>
+          <div class="pending-actions">
+            <button class="btn-confirm" onclick="confirmMatch('${m.id}')">✓</button>
+            <button class="btn-reject" onclick="rejectMatch('${m.id}')">✕</button>
+          </div>
+        </div>`).join(''):'<div class="empty" style="padding:1.25rem;">Nema mečeva na čekanju ✓</div>'}
+    </div>
+
+    <div class="admin-section">
+      <div class="admin-section-header">👤 Dodaj Igrača</div>
+      <div style="padding:1.25rem;">
+        <div class="form-row">
+          <div class="form-group" style="margin:0"><label>Ime i prezime *</label><input type="text" id="new-player-name" placeholder="Ime Prezime"/></div>
+          <div class="form-group" style="margin:0"><label>Email *</label><input type="email" id="new-player-email" placeholder="ime@email.com"/></div>
+        </div>
+        <div class="form-row" style="margin-top:0.75rem;">
+          <div class="form-group" style="margin:0"><label>Početni bodovi</label><input type="number" id="new-player-points" value="0" min="0"/></div>
+          <div class="form-group" style="margin:0;display:flex;align-items:flex-end;">
+            <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;margin-bottom:0.65rem;font-size:0.85rem;color:var(--text2);">
+              <input type="checkbox" id="new-player-admin" style="width:16px;height:16px;accent-color:var(--orange);"/> Admin ovlasti
+            </label>
+          </div>
+        </div>
+        <button class="btn-primary" id="add-player-btn" onclick="addPlayer()">+ Dodaj Igrača</button>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <div class="admin-section-header">📋 Igrači (${allPlayers.length})</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 50px 36px;padding:0.6rem 1.25rem;border-bottom:1px solid var(--border);background:var(--bg3);">
+        <span style="font-size:0.65rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;">Ime</span>
+        <span style="font-size:0.65rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;">Email</span>
+        <span style="font-size:0.65rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;text-align:center;">Admin</span>
+        <span></span>
+      </div>
+      ${allPlayers.map(p=>`
+        <div class="player-admin-row">
+          <span style="font-weight:600;font-size:0.85rem;">${p.name}</span>
+          <span style="color:var(--text3);font-size:0.78rem;">${p.email}</span>
+          <span style="text-align:center;">${p.is_admin?'✓':''}</span>
+          <button onclick="openEditPlayer('${p.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;transition:color 0.15s;" onmouseover="this.style.color='var(--orange)'" onmouseout="this.style.color='var(--text3)'">✏️</button>
+          <button onclick="removePlayer('${p.id}','${p.name}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;transition:color 0.15s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">🗑</button>
+        </div>`).join('')}
+    </div>
+
+    <div class="admin-section">
+      <div class="admin-section-header">🗑 Upravljanje Mečevima (${allMatches.length})</div>
+      ${allMatches.map((m,i)=>`
+        <div class="match-admin-row">
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:700;color:var(--orange);">#${m.match_number}</span>
+          <div>
+            <div style="font-size:0.82rem;font-weight:600;color:var(--text);">🏆 ${pname(m.winner1_email)}${m.winner2_email?' & '+pname(m.winner2_email):''}</div>
+            <div style="font-size:0.75rem;color:var(--text3);">vs ${pname(m.loser1_email)}${m.loser2_email?' & '+pname(m.loser2_email):''} · ${m.notes||'—'} · ${fmtDate(m.created_at)}</div>
+          </div>
+          <span style="font-size:0.65rem;font-weight:600;padding:0.2rem 0.5rem;border-radius:20px;white-space:nowrap;${m.status==='Potvrđeno'?'background:var(--green-glow);color:var(--green)':'background:rgba(245,158,11,0.1);color:var(--gold)'}">${m.status==='Potvrđeno'?'✓':'⏳'}</span>
+          <button onclick="openEditMatch('${m.id}')" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text2);padding:0.25rem 0.6rem;border-radius:6px;cursor:pointer;font-size:0.75rem;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--orange)';this.style.color='var(--orange)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">✏️</button>
+          <button onclick="deleteMatch('${m.id}',${m.match_number})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;transition:color 0.15s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">🗑</button>
+        </div>`).join('')}
+    </div>`;
+}
+
+async function confirmMatch(id) {
+  const {error}=await sb.from('matches').update({status:'Potvrđeno',potvrdio_admin:currentPlayer.email,vrijeme_potvrde:new Date().toISOString()}).eq('id',id);
+  if(error){showToast('Greška','error');return;}
+  showToast('Meč potvrđen! ✓','success');
+  await loadAll(); renderAdminPanel();
+}
+
+async function rejectMatch(id) {
+  if(!confirm('Odbiti ovaj meč?')) return;
+  const {error}=await sb.from('matches').delete().eq('id',id);
+  if(error){showToast('Greška','error');return;}
+  showToast('Meč odbijen.','');
+  await loadAll(); renderAdminPanel();
+}
+
+async function addPlayer() {
+  const name=document.getElementById('new-player-name').value.trim();
+  const email=document.getElementById('new-player-email').value.trim();
+  const points=parseInt(document.getElementById('new-player-points').value)||0;
+  const isAdminP=document.getElementById('new-player-admin').checked;
+  if(!name||!email){showToast('Unesi ime i email!','error');return;}
+  if(allPlayers.find(p=>p.email===email)){showToast('Igrač već postoji!','error');return;}
+  const btn=document.getElementById('add-player-btn');
+  btn.disabled=true; btn.textContent='Dodajem...';
+  const {error}=await sb.from('players').insert({name,email,is_admin:isAdminP,active:true,initial_points:points});
+  btn.disabled=false; btn.textContent='+ Dodaj Igrača';
+  if(error){showToast('Greška: '+error.message,'error');return;}
+  showToast(name+' dodan/a! ✓','success');
+  await loadAll(); renderAdminPanel();
+}
+
+let editPlayerId = null;
+
+function openEditPlayer(id) {
+  editPlayerId = id;
+  const p = allPlayers.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('edit-player-name').value = p.name || '';
+  document.getElementById('edit-player-email').value = p.email || '';
+  document.getElementById('edit-player-points').value = p.initial_points || 0;
+  document.getElementById('edit-player-admin').checked = p.is_admin || false;
+  openModal('modal-edit-player');
+}
+
+async function saveEditPlayer() {
+  const name = document.getElementById('edit-player-name').value.trim();
+  const email = document.getElementById('edit-player-email').value.trim();
+  const points = parseInt(document.getElementById('edit-player-points').value) || 0;
+  const isAdmin = document.getElementById('edit-player-admin').checked;
+
+  if(!name||!email) { showToast('Ispuni obavezna polja!','error'); return; }
+
+  const btn = document.getElementById('save-edit-player-btn');
+  btn.disabled=true; btn.textContent='Spremam...';
+
+  const {error} = await sb.from('players').update({
+    name, email, initial_points: points, is_admin: isAdmin
+  }).eq('id', editPlayerId);
+
+  btn.disabled=false; btn.textContent='💾 Spremi promjene';
+  if(error) { showToast('Greška: '+error.message,'error'); return; }
+  showToast(name+' ažuriran! ✓','success');
+  closeModal('modal-edit-player');
+  await loadAll();
+  renderAdminPanel();
+}
+
+async function removePlayer(id,name) {
+  if(!confirm('Ukloniti "'+name+'"?')) return;
+  const {error}=await sb.from('players').update({active:false}).eq('id',id);
+  if(error){showToast('Greška','error');return;}
+  showToast(name+' uklonjen/a.','');
+  await loadAll(); renderAdminPanel();
+}
+
+let editMatchId = null;
+
+function openEditMatch(id) {
+  editMatchId = id;
+  const m = allMatches.find(x=>x.id===id);
+  if(!m) return;
+
+  const opts = allPlayers.map(p=>`<option value="${p.email}">${p.name}</option>`).join('');
+  const emptyOpt = '<option value="">— nije parovi —</option>';
+  const emptyReq = '<option value="">— odaberi —</option>';
+
+  ['edit-w1','edit-l1'].forEach(id => {
+    document.getElementById(id).innerHTML = emptyReq + opts;
+  });
+  ['edit-w2','edit-l2'].forEach(id => {
+    document.getElementById(id).innerHTML = emptyOpt + opts;
+  });
+
+  document.getElementById('edit-w1').value = m.winner1_email || '';
+  document.getElementById('edit-w2').value = m.winner2_email || '';
+  document.getElementById('edit-l1').value = m.loser1_email || '';
+  document.getElementById('edit-l2').value = m.loser2_email || '';
+  document.getElementById('edit-score').value = m.notes || '';
+  document.getElementById('edit-status').value = m.status || 'Čeka Potvrdu';
+
+  openModal('modal-edit-match');
+}
+
+async function saveEditMatch() {
+  const w1 = document.getElementById('edit-w1').value;
+  const w2 = document.getElementById('edit-w2').value;
+  const l1 = document.getElementById('edit-l1').value;
+  const l2 = document.getElementById('edit-l2').value;
+  const score = document.getElementById('edit-score').value.trim();
+  const status = document.getElementById('edit-status').value;
+
+  if(!w1||!l1||!score) { showToast('Ispuni obavezna polja!','error'); return; }
+
+  const sel = [w1,w2,l1,l2].filter(Boolean);
+  if(new Set(sel).size !== sel.length) { showToast('Isti igrač ne može biti na obje strane!','error'); return; }
+
+  const btn = document.getElementById('save-edit-match-btn');
+  btn.disabled=true; btn.textContent='Spremam...';
+
+  const updates = {
+    winner1_email: w1,
+    winner2_email: w2 || null,
+    loser1_email: l1,
+    loser2_email: l2 || null,
+    notes: score,
+    status: status
+  };
+  if(status === 'Potvrđeno') {
+    updates.potvrdio_admin = currentPlayer.email;
+    updates.vrijeme_potvrde = new Date().toISOString();
+  }
+
+  const {error} = await sb.from('matches').update(updates).eq('id', editMatchId);
+  btn.disabled=false; btn.textContent='💾 Spremi promjene';
+
+  if(error) { showToast('Greška: '+error.message,'error'); return; }
+  showToast('Meč ažuriran! ✓','success');
+  closeModal('modal-edit-match');
+  await loadAll();
+  renderAdminPanel();
+}
+
+async function deleteMatch(id,num) {
+  if(!confirm('Obrisati Meč #'+num+'? Ova radnja je trajna!')) return;
+  const {error}=await sb.from('matches').delete().eq('id',id);
+  if(error){showToast('Greška','error');return;}
+  showToast('Meč #'+num+' obrisan.','');
+  await loadAll(); renderAdminPanel();
+}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});});
+
+function toggleMenu() {
+  document.getElementById('mobile-menu').classList.toggle('open');
+  document.getElementById('hamburger').classList.toggle('open');
+}
+
+function mobileNav(id) {
+  document.querySelectorAll('.mobile-menu button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('mob-'+id)?.classList.add('active');
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.getElementById('nav-'+id)?.classList.add('active');
+  document.getElementById('mobile-menu').classList.remove('open');
+  document.getElementById('hamburger').classList.remove('open');
+  if(id==='admin') renderAdminPanel();
+}
+
+// ---- ANIMATE COUNT ----
+function animateCount(id, target) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  const duration = 800;
+  const start = performance.now();
+  const startVal = 0;
+  function update(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(startVal + (target - startVal) * eased);
+    if(progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+// ---- STREAK ----
+function getStreak(email) {
+  const confirmed = allMatches.filter(m => m.status === 'Potvrđeno');
+  const playerMatches = confirmed
+    .filter(m => [m.winner1_email,m.winner2_email,m.loser1_email,m.loser2_email].includes(email))
+    .slice(0, 8)
+    .reverse();
+  return playerMatches.map(m => {
+    const isWin = m.winner1_email===email || m.winner2_email===email;
+    return isWin ? 'w' : 'l';
+  });
+}
+
+function renderStreak(streak) {
+  if(!streak.length) return '';
+  return '<div class="streak-wrap">'
+    + streak.map(s => '<div class="streak-dot '+s+'">'+(s==='w'?'W':'L')+'</div>').join('')
+    + '</div>';
+}
+
+// ---- POINTS CHART ----
+function renderPointsChart(email) {
+  const confirmed = allMatches
+    .filter(m => m.status==='Potvrđeno' && [m.winner1_email,m.winner2_email,m.loser1_email,m.loser2_email].includes(email))
+    .slice().reverse();
+
+  if(confirmed.length < 2) return '';
+
+  const player = allPlayers.find(p=>p.email===email);
+  let pts = Number(player?.initial_points)||0;
+  const points = [pts];
+  confirmed.forEach(m => {
+    const isWin = m.winner1_email===email || m.winner2_email===email;
+    pts += isWin ? 2 : 1;
+    points.push(pts);
+  });
+
+  const W = 300, H = 80;
+  const minP = Math.min(...points);
+  const maxP = Math.max(...points);
+  const range = maxP - minP || 1;
+
+  const toX = i => (i / (points.length-1)) * W;
+  const toY = v => H - ((v - minP) / range) * (H - 10) - 5;
+
+  const pathD = points.map((v,i) => (i===0?'M':'L')+toX(i).toFixed(1)+','+toY(v).toFixed(1)).join(' ');
+  const areaD = pathD + ' L'+W+','+H+' L0,'+H+' Z';
+
+  const dots = points.map((v,i) =>
+    '<circle cx="'+toX(i).toFixed(1)+'" cy="'+toY(v).toFixed(1)+'" r="3" fill="var(--orange)"/>'
+  ).join('');
+
+  return '<div class="chart-wrap">'
+    + '<div class="chart-title">Napredak bodova</div>'
+    + '<svg class="chart-svg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="height:80px;">'
+    + '<defs><linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="var(--orange)" stop-opacity="0.3"/>'
+    + '<stop offset="100%" stop-color="var(--orange)" stop-opacity="0"/>'
+    + '</linearGradient></defs>'
+    + '<path d="'+areaD+'" fill="url(#chartGrad)"/>'
+    + '<path d="'+pathD+'" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linejoin="round"/>'
+    + dots
+    + '<text x="2" y="12" fill="var(--text3)" font-size="9">'+maxP+'</text>'
+    + '<text x="2" y="'+(H-2)+'" fill="var(--text3)" font-size="9">'+minP+'</text>'
+    + '</svg>'
+    + '</div>';
+}
+
+// ---- EXPORT LJESTVICA ----
+function exportLjestvica() {
+  const stats = calcStats();
+  const sorted = Object.values(stats).filter(s=>s.wins>0||s.losses>0).sort((a,b)=>b.points-a.points||b.wins-a.wins);
+  const date = new Date().toLocaleDateString('hr-HR');
+
+  const rows = sorted.map((p,i) =>
+    '<tr style="border-bottom:1px solid #333;">'
+    + '<td style="padding:8px 12px;font-weight:700;color:'+(i===0?'#f59e0b':i===1?'#94a3b8':i===2?'#b45309':'#888')+'">'+(i+1)+'</td>'
+    + '<td style="padding:8px 12px;font-weight:600;color:#f0f0f0;">'+p.name+'</td>'
+    + '<td style="padding:8px 12px;text-align:center;color:#22c55e;">'+p.wins+'</td>'
+    + '<td style="padding:8px 12px;text-align:center;color:#ef4444;">'+p.losses+'</td>'
+    + '<td style="padding:8px 12px;text-align:center;font-weight:700;color:#ff6b2b;font-size:1.1rem;">'+p.points+'</td>'
+    + '</tr>'
+  ).join('');
+
+  const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"/>'
+    + '<style>body{margin:0;background:#0d0d0d;font-family:Inter,sans-serif;padding:2rem;}'
+    + 'table{width:100%;border-collapse:collapse;}'
+    + 'th{padding:10px 12px;text-align:left;font-size:0.72rem;text-transform:uppercase;letter-spacing:1.5px;color:#606060;border-bottom:1px solid #333;}'
+    + 'th:nth-child(n+3){text-align:center;}'
+    + '</style></head><body>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">'
+    + '<div style="font-family:sans-serif;font-size:1.5rem;font-weight:700;color:#f0f0f0;">TK <span style="color:#ff6b2b;">Buje</span></div>'
+    + '<div style="font-size:0.8rem;color:#606060;">Ljestvica · '+date+'</div>'
+    + '</div>'
+    + '<table><tr><th>#</th><th>Igrač</th><th>W</th><th>L</th><th>Pts</th></tr>'+rows+'</table>'
+    + '</body></html>';
+
+  const blob = new Blob([html], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'tkbuje-ljestvica-'+date.replace(/\./g,'-')+'.html';
+  a.click();
+  showToast('Ljestvica preuzeta! ↓', 'success');
+}
+
+async function init() {
+  if(!authListenerReady) {
+    authListenerReady = true;
+    sb.auth.onAuthStateChange(async (event, session) => {
+      if(!appStarted) return;
+      if(event === 'SIGNED_IN') {
+        const ok = await handleAuth();
+        if(ok) await loadAll();
+      } else if(event === 'SIGNED_OUT') {
+        document.getElementById('login-screen').classList.add('show');
+      }
+    });
+  }
+
+  const shouldOpenParici = localStorage.getItem('tkbuje_selected_app') === 'parici' || location.hash === '#parici' || location.search.includes('app=parici');
+  if(shouldOpenParici) await enterPariciApp();
+}
+
+init();
+</script>
+</body>
+</html>
