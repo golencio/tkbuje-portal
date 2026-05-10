@@ -10,100 +10,265 @@
   <meta name="theme-color" content="#050505" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="TK Portal" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <meta name="apple-mobile-web-app-title" content="TK Buje Portal" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <style>
-    :root{
-      --bg:#050606; --panel:rgba(18,20,20,.72); --line:rgba(255,255,255,.10);
-      --text:#f5f5f5; --muted:#b9b9b9; --orange:#ff7a17; --orange2:#ff9b2f;
-      --blue:#29b9ff; --green:#40d35d;
+    :root {
+      --bg:#070707;
+      --card:#111312;
+      --text:#f3f3f3;
+      --muted:#c9c9c9;
+      --dim:#777;
+      --orange:#ff6b2b;
+      --blue:#3b82f6;
+      --green:#22c55e;
+      --border:rgba(255,255,255,.1);
     }
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{min-height:100%;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
-    body{overflow-x:hidden}
-    .portal{min-height:100vh;position:relative;display:flex;align-items:center;justify-content:center;padding:44px 28px;isolation:isolate;}
-    .portal::before{content:"";position:absolute;inset:0;z-index:-3;background:
-      radial-gradient(circle at 78% 16%, rgba(255,124,23,.35), transparent 22%),
-      radial-gradient(circle at 52% 44%, rgba(255,124,23,.10), transparent 36%),
-      radial-gradient(circle at 20% 80%, rgba(41,185,255,.06), transparent 32%),
-      linear-gradient(180deg,#030404 0%,#08100f 52%,#050505 100%);}
-    .portal::after{content:"";position:absolute;inset:0;z-index:-2;background:
-      linear-gradient(90deg, rgba(0,0,0,.76), rgba(0,0,0,.15) 52%, rgba(0,0,0,.65)),
-      linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.76));}
-    .court{position:absolute;left:0;right:0;bottom:-18vh;height:55vh;z-index:-1;opacity:.28;background:
-      radial-gradient(ellipse at center, rgba(255,124,23,.32), transparent 58%),
-      repeating-linear-gradient(90deg, transparent 0 13%, rgba(255,255,255,.08) 13.2% 13.35%, transparent 13.55% 27%),
-      repeating-linear-gradient(0deg, transparent 0 24%, rgba(255,255,255,.08) 24.2% 24.35%, transparent 24.55% 48%);
-      transform:perspective(760px) rotateX(64deg);transform-origin:bottom center;filter:blur(.2px);}
-    .racket{position:absolute;right:-28px;top:-18px;width:min(420px,34vw);height:min(420px,34vw);z-index:-1;opacity:.38;transform:rotate(20deg);}
-    .ball{position:absolute;right:min(175px,14vw);top:min(188px,16vw);width:min(84px,7vw);height:min(84px,7vw);border-radius:50%;background:
-      radial-gradient(circle at 28% 22%,#fff870 0 12%,#d9df13 38%,#859200 100%);box-shadow:0 0 42px rgba(255,174,26,.55);z-index:-1;opacity:.92;}
-    .ball::before,.ball::after{content:"";position:absolute;border:4px solid rgba(255,255,255,.72);width:78%;height:78%;border-radius:50%;top:11%;left:11%;clip-path:polygon(0 0,40% 0,40% 100%,0 100%);transform:rotate(36deg)}
-    .ball::after{clip-path:polygon(60% 0,100% 0,100% 100%,60% 100%);transform:rotate(36deg)}
-    .wrap{width:min(1080px,100%);text-align:center;}
-    .brand{position:absolute;top:48px;left:max(34px,calc((100vw - 1080px)/2));font-family:"Space Grotesk",Inter,sans-serif;font-weight:800;font-size:28px;letter-spacing:-1px;color:#fff;display:inline-flex;align-items:center;gap:10px;border-bottom:3px solid var(--orange);padding-bottom:5px;text-shadow:0 8px 20px rgba(0,0,0,.6)}
-    .brand span{color:var(--orange)}
-    .brand .mini-ball{width:27px;height:27px;border:2px solid rgba(255,255,255,.55);border-radius:50%;position:relative;opacity:.9}
-    .brand .mini-ball::before{content:"";position:absolute;inset:4px;border-left:2px solid rgba(255,255,255,.5);border-radius:50%;transform:rotate(25deg)}
-    h1{font-family:"Space Grotesk",Inter,sans-serif;font-size:clamp(56px,7.5vw,98px);line-height:.93;font-weight:900;letter-spacing:-4px;text-shadow:0 10px 30px rgba(0,0,0,.78);margin-top:42px;}
-    h1 .white{display:block;color:#fff} h1 .orange{display:block;color:var(--orange);text-shadow:0 0 26px rgba(255,122,23,.25),0 10px 30px rgba(0,0,0,.8)}
-    .underline{width:92px;height:3px;border-radius:99px;background:var(--orange);margin:26px auto 28px;box-shadow:0 0 18px rgba(255,122,23,.7)}
-    .sub{font-size:clamp(18px,2.15vw,29px);color:#d3d3d3;margin-bottom:48px;text-shadow:0 6px 22px rgba(0,0,0,.7)}
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;}
-    .card{min-height:330px;text-decoration:none;color:var(--text);border-radius:20px;padding:34px 24px 28px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;position:relative;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));border:1.6px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 22px 60px rgba(0,0,0,.34);overflow:hidden;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease,background .2s ease;}
-    .card::before{content:"";position:absolute;inset:-2px;opacity:.65;z-index:-1;border-radius:inherit;background:radial-gradient(circle at 50% 36%, var(--glow), transparent 46%)}
-    .card:hover{transform:translateY(-6px);background:linear-gradient(180deg,rgba(255,255,255,.085),rgba(255,255,255,.026));box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 30px 80px rgba(0,0,0,.48),0 0 28px var(--glow)}
-    .orange{--accent:var(--orange);--glow:rgba(255,122,23,.30);border-color:rgba(255,122,23,.64)}
-    .blue{--accent:var(--blue);--glow:rgba(41,185,255,.25);border-color:rgba(41,185,255,.64)}
-    .green{--accent:var(--green);--glow:rgba(64,211,93,.25);border-color:rgba(64,211,93,.64)}
-    .icon{width:100px;height:100px;color:var(--accent);filter:drop-shadow(0 0 18px var(--glow)) drop-shadow(0 12px 16px rgba(0,0,0,.45));}
-    .card h2{font-family:"Space Grotesk",Inter,sans-serif;font-size:29px;line-height:1;font-weight:900;text-transform:uppercase;letter-spacing:-.8px;margin-top:28px;text-shadow:0 8px 20px rgba(0,0,0,.75)}
-    .card p{font-size:18px;line-height:1.45;color:#d0d0d0;margin-top:18px;min-height:52px;}
-    .open{margin-top:24px;border:1.6px solid var(--accent);color:var(--accent);border-radius:999px;padding:13px 28px;min-width:170px;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;justify-content:center;gap:20px;box-shadow:0 0 20px var(--glow);}
-    .open b{font-size:23px;line-height:0}
-    @media(max-width:860px){
-      .portal{align-items:flex-start;padding:34px 18px 40px;min-height:100dvh}.racket,.ball,.court{display:none}.brand{position:relative;top:auto;left:auto;margin:0 auto 36px;font-size:30px}.wrap{max-width:390px}h1{font-size:36px;line-height:1.13;letter-spacing:-1.6px;margin-top:0}.underline{width:62px;margin:14px auto 16px}.sub{font-size:14px;line-height:1.45;margin-bottom:28px}.grid{grid-template-columns:1fr;gap:14px}.card{min-height:104px;border-radius:12px;display:grid;grid-template-columns:78px 1fr auto;gap:18px;text-align:left;align-items:center;padding:16px 18px}.card::before{background:radial-gradient(circle at 15% 50%, var(--glow), transparent 52%)}.icon{width:66px;height:66px}.card h2{font-size:18px;margin:0 0 7px}.card p{font-size:14px;line-height:1.35;margin:0;min-height:0}.open{border:0;min-width:auto;padding:0;margin:0;font-size:0;box-shadow:none}.open b{font-size:32px}.card:hover{transform:none}.card .text{min-width:0}}
+    * { box-sizing:border-box; margin:0; padding:0; }
+    html, body { min-height:100%; }
+    body {
+      font-family:Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      overflow-x:hidden;
+    }
+    body::before {
+      content:"";
+      position:fixed;
+      inset:0;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(255,107,43,.13), transparent 34%),
+        radial-gradient(circle at 78% 30%, rgba(34,197,94,.08), transparent 34%),
+        radial-gradient(circle at 50% 110%, rgba(255,107,43,.08), transparent 42%),
+        linear-gradient(180deg, #0d0d0d 0%, #050505 100%);
+      z-index:-2;
+    }
+    body::after {
+      content:"";
+      position:fixed;
+      inset:0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+      background-size:54px 54px;
+      mask-image:radial-gradient(circle at center, black, transparent 75%);
+      z-index:-1;
+      pointer-events:none;
+    }
+    .page {
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:48px 22px;
+    }
+    .wrap {
+      width:100%;
+      max-width:1180px;
+      text-align:center;
+    }
+    .logo {
+      display:inline-block;
+      font-family:"Space Grotesk", Inter, sans-serif;
+      font-size:clamp(1.45rem, 2.8vw, 2rem);
+      font-weight:800;
+      letter-spacing:-.04em;
+      padding-bottom:10px;
+      border-bottom:3px solid var(--orange);
+      margin-bottom:46px;
+      text-transform:uppercase;
+    }
+    .logo span { color:var(--orange); }
+    h1 {
+      font-family:"Space Grotesk", Inter, sans-serif;
+      font-size:clamp(3rem, 8vw, 5.6rem);
+      font-weight:900;
+      letter-spacing:-.07em;
+      line-height:.92;
+      margin-bottom:20px;
+      text-shadow:0 20px 60px rgba(0,0,0,.55);
+    }
+    h1 span { color:var(--orange); display:block; }
+    .subtitle {
+      color:var(--muted);
+      font-size:clamp(1.05rem, 2.2vw, 1.45rem);
+      margin-bottom:56px;
+    }
+    .grid {
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:22px;
+    }
+    .card {
+      min-height:280px;
+      border-radius:24px;
+      border:1.5px solid var(--border);
+      background:
+        radial-gradient(circle at 50% 0%, rgba(255,255,255,.08), transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.018));
+      box-shadow:0 24px 70px rgba(0,0,0,.38);
+      padding:34px 24px 28px;
+      text-decoration:none;
+      color:var(--text);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:space-between;
+      transition:transform .22s ease, box-shadow .22s ease, background .22s ease;
+    }
+    .card:hover {
+      transform:translateY(-6px);
+      box-shadow:0 32px 90px rgba(0,0,0,.55);
+      background:
+        radial-gradient(circle at 50% 0%, rgba(255,255,255,.11), transparent 36%),
+        linear-gradient(180deg, rgba(255,255,255,.065), rgba(255,255,255,.023));
+    }
+    .orange { border-color:rgba(255,107,43,.7); }
+    .blue { border-color:rgba(59,130,246,.7); }
+    .green { border-color:rgba(34,197,94,.7); }
+    .icon {
+      height:72px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom:18px;
+      filter:drop-shadow(0 14px 28px rgba(0,0,0,.45));
+    }
+    .emoji { font-size:3.5rem; line-height:1; }
+    .tri {
+      width:78px;
+      height:64px;
+      position:relative;
+    }
+    .tri span {
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      height:0;
+      border-left:solid transparent;
+      border-right:solid transparent;
+      border-bottom:solid var(--orange);
+      filter:drop-shadow(0 0 10px rgba(255,107,43,.35));
+    }
+    .tri span:nth-child(1) { top:0; border-left-width:18px; border-right-width:18px; border-bottom-width:24px; }
+    .tri span:nth-child(2) { top:25px; border-left-width:32px; border-right-width:32px; border-bottom-width:16px; }
+    .tri span:nth-child(3) { top:46px; border-left-width:45px; border-right-width:45px; border-bottom-width:13px; }
+    .tri span::after {
+      content:"";
+      position:absolute;
+      left:50%;
+      bottom:-21px;
+      transform:translateX(-50%);
+      border-left:solid transparent;
+      border-right:solid transparent;
+      border-bottom:solid #111312;
+    }
+    .tri span:nth-child(1)::after { border-left-width:12px; border-right-width:12px; border-bottom-width:16px; bottom:-22px; }
+    .tri span:nth-child(2)::after { border-left-width:25px; border-right-width:25px; border-bottom-width:11px; bottom:-15px; }
+    .tri span:nth-child(3)::after { border-left-width:36px; border-right-width:36px; border-bottom-width:8px; bottom:-12px; }
+    .title {
+      font-size:1.45rem;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:-.045em;
+      margin-bottom:12px;
+    }
+    .desc {
+      color:var(--muted);
+      font-size:1rem;
+      line-height:1.45;
+      min-height:46px;
+    }
+    .btn {
+      margin-top:28px;
+      min-width:138px;
+      padding:12px 22px;
+      border-radius:999px;
+      border:1.5px solid currentColor;
+      font-weight:900;
+      font-size:.83rem;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+    .orange .btn, .orange .icon { color:var(--orange); }
+    .blue .btn { color:#46b9ff; }
+    .green .btn { color:var(--green); }
+
+    @media (max-width: 920px) {
+      .page { align-items:flex-start; padding-top:36px; }
+      .wrap { max-width:520px; }
+      .logo { margin-bottom:38px; }
+      h1 { font-size:clamp(2.4rem, 12vw, 4rem); }
+      .subtitle { margin-bottom:32px; }
+      .grid { grid-template-columns:1fr; gap:14px; }
+      .card {
+        min-height:0;
+        flex-direction:row;
+        text-align:left;
+        justify-content:flex-start;
+        align-items:center;
+        gap:18px;
+        padding:18px 20px;
+        border-radius:16px;
+      }
+      .icon { width:76px; height:58px; margin:0; flex:0 0 76px; }
+      .emoji { font-size:3rem; }
+      .tri { transform:scale(.72); }
+      .title { font-size:1.05rem; margin-bottom:5px; }
+      .desc { font-size:.9rem; min-height:0; }
+      .btn {
+        margin:0 0 0 auto;
+        min-width:0;
+        padding:0;
+        border:0;
+        font-size:1.6rem;
+      }
+      .btn span { display:none; }
+    }
   </style>
 </head>
 <body>
-  <main class="portal">
-    <div class="court"></div>
-    <svg class="racket" viewBox="0 0 300 300" aria-hidden="true">
-      <ellipse cx="154" cy="112" rx="78" ry="106" fill="none" stroke="rgba(255,255,255,.42)" stroke-width="6"/>
-      <ellipse cx="154" cy="112" rx="61" ry="87" fill="none" stroke="rgba(255,122,23,.18)" stroke-width="2"/>
-      <g stroke="rgba(255,255,255,.16)" stroke-width="1.4">
-        <path d="M102 48v132M123 25v174M145 10v206M166 13v201M187 29v170M208 55v119"/>
-        <path d="M82 85h144M78 109h153M81 134h147M91 158h125"/>
-      </g>
-      <path d="M196 202l82 82" stroke="rgba(255,255,255,.42)" stroke-width="14" stroke-linecap="round"/>
-      <path d="M207 213l71 71" stroke="rgba(255,122,23,.24)" stroke-width="6" stroke-linecap="round"/>
-    </svg>
-    <div class="ball"></div>
-
-    <div class="brand">TK <span>BUJE</span><i class="mini-ball"></i></div>
-
+  <main class="page">
     <section class="wrap" aria-label="TK Buje portal">
-      <h1><span class="white">Dobrodošli u</span><span class="orange">TK Buje</span></h1>
-      <div class="underline"></div>
-      <p class="sub">Odaberite aplikaciju koju želite koristiti</p>
+      <div class="logo">TK <span>BUJE</span></div>
+      <h1>Dobrodošli u <span>TK BUJE</span></h1>
+      <p class="subtitle">Odaberite aplikaciju koju želite koristiti</p>
 
       <div class="grid">
         <a class="card orange" href="https://golencio.github.io/tkbuje-piramida/">
-          <svg class="icon" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"><path d="M50 10L18 82h64L50 10Z"/><path d="M35 44h30M27 62h46M22 74h56"/></svg>
-          <div class="text"><h2>Piramida</h2><p>Klupska piramida<br>i izazovi</p></div><span class="open"><span>Otvori</span><b>→</b></span>
+          <div class="icon"><div class="tri"><span></span><span></span><span></span></div></div>
+          <div>
+            <div class="title">Piramida</div>
+            <div class="desc">Klupska piramida i izazovi</div>
+          </div>
+          <div class="btn"><span>Otvori</span> →</div>
         </a>
+
         <a class="card blue" href="https://turniri.tkbuje.hr/">
-          <svg class="icon" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><ellipse cx="31" cy="33" rx="19" ry="27" transform="rotate(-35 31 33)"/><ellipse cx="69" cy="33" rx="19" ry="27" transform="rotate(35 69 33)"/><path d="M43 56L23 86M57 56l20 30M35 16l23 39M65 16L42 55"/><g stroke-width="1.2" opacity=".85"><path d="M17 31c8-7 18-13 30-16M20 42c11-7 23-13 36-15M80 42c-11-7-23-13-36-15M83 31c-8-7-18-13-30-16"/></g></svg>
-          <div class="text"><h2>Buje Mix</h2><p>Švicarac turniri</p></div><span class="open"><span>Otvori</span><b>→</b></span>
+          <div class="icon"><div class="emoji">🎾</div></div>
+          <div>
+            <div class="title">Buje Mix</div>
+            <div class="desc">Švicarac turniri</div>
+          </div>
+          <div class="btn"><span>Otvori</span> →</div>
         </a>
+
         <a class="card green" href="https://isias.tkbuje.hr/">
-          <svg class="icon" viewBox="0 0 100 100" fill="currentColor"><circle cx="54" cy="16" r="6"/><path d="M49 26c7-3 16 0 19 7l7 15c1 3 0 6-3 7s-6 0-7-3l-5-10-7 13 12 9c2 2 3 5 1 8L55 90c-2 3-6 4-9 2s-4-6-2-9l8-13-12-8-9 12c-2 3-6 3-9 1s-3-6-1-9l12-16 7-16c1-3 4-6 9-8Z"/><path d="M70 35c6-8 14-12 22-11" stroke="currentColor" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="93" cy="24" r="5" fill="none" stroke="currentColor" stroke-width="4"/></svg>
-          <div class="text"><h2>Išijas Liga</h2><p>Najzabavnija liga<br>na svijetu</p></div><span class="open"><span>Otvori</span><b>→</b></span>
+          <div class="icon"><div class="emoji">🏃</div></div>
+          <div>
+            <div class="title">Išijas Liga</div>
+            <div class="desc">Najzabavnija liga na svijetu</div>
+          </div>
+          <div class="btn"><span>Otvori</span> →</div>
         </a>
+
         <a class="card orange" href="https://golencio.github.io/tkbuje/">
-          <svg class="icon" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"><path d="M30 18h40v15c0 19-9 33-20 33S30 52 30 33V18Z" fill="currentColor" opacity=".20"/><path d="M30 18h40v15c0 19-9 33-20 33S30 52 30 33V18Z"/><path d="M30 28H17v9c0 14 9 23 20 23M70 28h13v9c0 14-9 23-20 23M50 66v14M34 84h32M27 92h46"/></svg>
-          <div class="text"><h2>Parići</h2><p>Parići i klupska<br>ljestvica</p></div><span class="open"><span>Otvori</span><b>→</b></span>
+          <div class="icon"><div class="emoji">🏆</div></div>
+          <div>
+            <div class="title">Parići</div>
+            <div class="desc">Parići i klupska ljestvica</div>
+          </div>
+          <div class="btn"><span>Otvori</span> →</div>
         </a>
       </div>
     </section>
