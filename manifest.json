@@ -1,0 +1,25 @@
+{
+  "name": "TK Buje",
+  "short_name": "TK Buje",
+  "description": "Tenis Klub Buje - Me\u010devi, Ljestvica, Rezultati",
+  "start_url": "/tkbuje/",
+  "scope": "/tkbuje/",
+  "display": "standalone",
+  "background_color": "#1a5228",
+  "theme_color": "#1a5228",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
