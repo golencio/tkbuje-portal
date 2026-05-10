@@ -1,6 +1,6 @@
 {
   "name": "TK Buje Portal",
-  "short_name": "TK Buje",
+  "short_name": "Portal",
   "description": "TK Buje portal aplikacija",
   "start_url": "/tkbuje-portal/",
   "scope": "/tkbuje-portal/",
