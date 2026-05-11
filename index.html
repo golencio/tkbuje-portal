@@ -193,6 +193,32 @@
     .orange .btn, .orange .icon { color:var(--orange); }
     .blue .btn { color:#46b9ff; }
     .green .btn { color:var(--green); }
+
+    .isijas-icon-wrap {
+      width:72px;
+      height:72px;
+      min-width:72px;
+      max-width:72px;
+      min-height:72px;
+      max-height:72px;
+      flex:0 0 72px;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom:18px;
+    }
+    .isijas-icon-wrap .isijas-icon {
+      width:72px !important;
+      height:72px !important;
+      min-width:72px !important;
+      max-width:72px !important;
+      min-height:72px !important;
+      max-height:72px !important;
+      object-fit:contain !important;
+      display:block !important;
+    }
+
 @media (max-width: 920px) {
       .page { align-items:flex-start; padding-top:36px; }
       .wrap { max-width:520px; }
@@ -212,7 +238,25 @@
       }
       .icon { width:76px; height:58px; margin:0; flex:0 0 76px; }
       .emoji { font-size:3rem; }
-      .isijas-icon { width:76px; height:58px; max-width:76px; max-height:58px; }
+      .isijas-icon-wrap {
+        width:76px;
+        height:58px;
+        min-width:76px;
+        max-width:76px;
+        min-height:58px;
+        max-height:58px;
+        flex:0 0 76px;
+        margin:0;
+      }
+      .isijas-icon-wrap .isijas-icon {
+        width:76px !important;
+        height:58px !important;
+        min-width:76px !important;
+        max-width:76px !important;
+        min-height:58px !important;
+        max-height:58px !important;
+      }
+
       .tri { transform:scale(.72); }
       .title { font-size:1.05rem; margin-bottom:5px; }
       .desc { font-size:.9rem; min-height:0; }
@@ -254,8 +298,8 @@
         </a>
 
         <a class="card green" href="https://isias.tkbuje.hr/">
-          <div class="icon">
-            <img src="isijas.png" alt="Išijas Liga" class="isijas-icon" />
+          <div class="icon isijas-icon-wrap">
+            <img src="isijas.png" alt="Išijas Liga" class="isijas-icon">
           </div>
           <div>
             <div class="title">Išijas Liga</div>
