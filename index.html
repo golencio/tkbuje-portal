@@ -219,6 +219,22 @@
       display:block !important;
     }
 
+    .card.disabled {
+      pointer-events:none;
+      cursor:not-allowed;
+      opacity:.48;
+      filter:grayscale(.75);
+      position:relative;
+    }
+    .card.disabled:hover {
+      transform:none;
+      box-shadow:0 24px 70px rgba(0,0,0,.38);
+    }
+    .card.disabled .btn {
+      color:var(--dim);
+      border-color:var(--dim);
+    }
+
 @media (max-width: 920px) {
       .page { align-items:flex-start; padding-top:36px; }
       .wrap { max-width:520px; }
@@ -288,14 +304,14 @@
           <div class="btn"><span>Otvori</span> →</div>
         </a>
 
-        <a class="card blue" href="https://turniri.tkbuje.hr/">
+        <div class="card blue disabled" aria-disabled="true">
           <div class="icon"><div class="emoji">🎾</div></div>
           <div>
             <div class="title">Buje Mix</div>
-            <div class="desc">Švicarac turniri</div>
+            <div class="desc">U izradi</div>
           </div>
-          <div class="btn"><span>Otvori</span> →</div>
-        </a>
+          <div class="btn"><span>U izradi</span></div>
+        </div>
 
         <a class="card green" href="https://isias.tkbuje.hr/">
           <div class="icon isijas-icon-wrap">
